@@ -161,7 +161,7 @@
             <div id="season-stats-container" class="w-full max-w-4xl mt-6 px-1"></div>
 
             <!-- Stats Bar (Dinamik 3'lü Takım Kartı) -->
-            <div id="header-stats-container" class="flex gap-3 sm:gap-4 mt-6 w-full max-w-5xl justify-start lg:justify-center overflow-x-auto no-scrollbar pb-2 px-1 snap-x snap-mandatory scroll-smooth">
+            <div id="header-stats-container" class="flex gap-3 sm:gap-4 mt-2 w-full max-w-5xl justify-start lg:justify-center overflow-x-auto no-scrollbar pb-2 px-1 pt-8 snap-x snap-mandatory scroll-smooth">
                 <!-- Javascript tarafından doldurulacak -->
             </div>
         </div>
@@ -251,15 +251,43 @@
         
         <textarea id="wa-note" rows="2" placeholder="Velilere veya takıma not ekleyin... (İsteğe bağlı)" class="w-full bg-white border border-slate-200 rounded-xl p-3 text-sm font-semibold outline-none focus:border-brand mb-4"></textarea>
         
-        <div id="wa-roster-section" class="border-t border-slate-100 pt-4 hidden">
-            <h4 class="text-xs font-black text-brand uppercase mb-3"><i class="fas fa-clipboard-list"></i> Toplanma Bilgileri</h4>
+        <!-- GELECEK MAÇ ALANI (Toplanma, Forma, Kadro) -->
+        <div id="wa-future-section" class="border-t border-slate-100 pt-4 text-left hidden">
+            <h4 class="text-xs font-black text-[#004684] uppercase mb-3"><i class="fas fa-clock text-brand"></i> Toplanma Bilgileri</h4>
             <div class="grid grid-cols-2 gap-3 mb-4">
                 <input type="time" id="wa-meet-time" class="bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm font-bold outline-none focus:border-brand">
                 <input type="text" id="wa-meet-loc" placeholder="Toplanma Yeri" class="bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm font-bold outline-none focus:border-brand">
             </div>
+
+            <div class="mb-4">
+                <h4 class="text-xs font-black text-[#004684] uppercase mb-2"><i class="fas fa-tshirt text-brand"></i> Maç Forması Rengi</h4>
+                <input type="text" id="wa-jersey" placeholder="Örn: Sarı Formamızı Giyiyoruz" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm font-bold outline-none focus:border-brand">
+            </div>
+
+            <h4 class="text-xs font-black text-[#004684] uppercase mb-2 flex items-center justify-between">
+                <span><i class="fas fa-users text-brand"></i> Maç Kadrosu</span>
+            </h4>
+            
+            <div id="wa-roster-list" class="flex flex-col gap-2 max-h-[25vh] overflow-y-auto custom-scrollbar pr-2 mb-3">
+                <!-- Oyuncular buraya JS ile basılacak -->
+            </div>
+            
+            <div class="flex gap-2">
+                <input type="text" id="wa-new-player" placeholder="Yeni Sporcu (Örn: Ali - Pasör)" class="flex-1 bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold outline-none focus:border-brand">
+                <button onclick="addWaPlayer()" class="bg-brand text-[#004684] px-4 py-2 rounded-lg font-black text-xs hover:bg-[#e6d800] transition-colors"><i class="fas fa-plus"></i></button>
+            </div>
         </div>
 
-        <button onclick="sendWhatsapp()" class="w-full bg-[#25D366] hover:bg-[#20bd5a] text-white py-4 rounded-xl font-black uppercase flex items-center justify-center gap-2 transition-all shadow-lg mt-2">
+        <!-- OYNANMIŞ MAÇ ALANI (Set Skorları) -->
+        <div id="wa-played-section" class="border-t border-slate-100 pt-4 text-left hidden">
+            <div class="mb-4">
+                <h4 class="text-xs font-black text-[#004684] uppercase mb-2"><i class="fas fa-list-ol text-brand"></i> Set Skorları</h4>
+                <input type="text" id="wa-sets-input" placeholder="Örn: 25-20, 25-22, 15-10" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm font-bold outline-none focus:border-brand">
+                <p class="text-[9px] text-slate-400 mt-1">Eğer sistemde setler varsa otomatik dolar, isterseniz manuel düzeltebilirsiniz.</p>
+            </div>
+        </div>
+
+        <button onclick="sendWhatsapp()" class="w-full bg-[#25D366] hover:bg-[#20bd5a] text-white py-4 rounded-xl font-black uppercase flex items-center justify-center gap-2 transition-all shadow-lg mt-4">
             <i class="fab fa-whatsapp text-xl"></i> WhatsApp'a Git
         </button>
     </div>
@@ -340,7 +368,8 @@
         selectedCategory: 'all',
         logos: {},
         rosters: {},     // { "grup_adi": { coach: "", players: [] } }
-        currentInteractionMatch: null
+        currentInteractionMatch: null,
+        currentWaRoster: [] // WhatsApp paylaşımındaki geçici kadro listesi
     };
 
     // --- UTILS ---
@@ -592,7 +621,7 @@
                 // Sadece bizim takımın kadrolarını ve rakiplerini al
                 if (isOurClub(lastTeam)) {
                     const gKey = getGroupCode({kume:'', ktg: lastGroup, tur:'', gr:''}); // Kaba grup adı eşleştirmesi
-                    if (!state.rosters[gKey]) state.rosters[gKey] = { coach: lastCoach, players: [], opponents: [] };
+                    if (!state.rosters[gKey]) state.rosters[gKey] = { coach: lastCoach, players: [], opponents: [], teamName: lastTeam };
                     
                     if (nm) {
                         state.rosters[gKey].players.push({ no: no || '-', name: nm, pos: ps || 'Oyuncu', img: img });
@@ -895,31 +924,46 @@
             grandL += l;
             grandN += n;
 
+            let teamPlayerCount = 0;
+            for (let key in state.rosters) {
+                if (state.rosters[key].teamName && superNormalize(state.rosters[key].teamName).includes(normSearch)) {
+                    teamPlayerCount += state.rosters[key].players.length;
+                }
+            }
+
             html += `
-            <div class="snap-center shrink-0 bg-white/5 backdrop-blur-md rounded-2xl p-3 sm:p-4 border border-white/10 flex flex-col w-[260px] sm:w-[280px] shadow-lg relative overflow-hidden">
-                <div class="absolute -right-4 -bottom-6 text-white/5 transform -rotate-12 pointer-events-none">
-                    <i class="fas fa-chart-pie text-7xl"></i>
+            <div class="snap-center shrink-0 w-[260px] sm:w-[280px] relative">
+                <!-- Taşan ve Çerçevesiz Logo -->
+                <div class="absolute -top-8 left-1/2 transform -translate-x-1/2 w-14 h-14 z-20">
+                    ${getLogoHtml(team, "w-full h-full !border-none !bg-transparent drop-shadow-xl")}
                 </div>
-                <div class="text-[11px] sm:text-xs font-black text-white mb-3 flex items-center gap-2 relative z-10 border-b border-white/10 pb-2">
-                    ${getLogoHtml(team, "w-6 h-6 border border-white/20")}
-                    <span class="tracking-widest uppercase truncate">${team}</span>
-                </div>
-                <div class="grid grid-cols-4 gap-1.5 sm:gap-2 relative z-10">
-                    <div class="flex flex-col items-center justify-center bg-blue-500/10 rounded-xl py-2 sm:py-2.5 border border-blue-400/20">
-                        <div class="text-[8px] sm:text-[9px] text-blue-200 font-bold uppercase tracking-widest mb-0.5">TOP</div>
-                        <div class="text-base sm:text-lg font-black text-white leading-none">${p + n}</div>
+
+                <!-- Kart İçeriği -->
+                <div class="bg-white/5 backdrop-blur-md rounded-2xl p-3 sm:p-4 pt-12 border border-white/10 flex flex-col shadow-lg relative overflow-hidden h-full">
+                    <div class="absolute -right-4 -bottom-6 text-white/5 transform -rotate-12 pointer-events-none z-0">
+                        <i class="fas fa-chart-pie text-7xl"></i>
                     </div>
-                    <div class="flex flex-col items-center justify-center bg-emerald-500/10 rounded-xl py-2 sm:py-2.5 border border-emerald-500/30">
-                        <div class="text-[8px] sm:text-[9px] text-emerald-400 font-bold uppercase tracking-widest mb-0.5">GAL</div>
-                        <div class="text-base sm:text-lg font-black text-emerald-400 leading-none">${w}</div>
+                    <div class="flex flex-col items-center justify-center relative z-10 border-b border-white/10 pb-3 mb-3 gap-1 mt-3">
+                        <span class="text-[11px] sm:text-xs font-black text-white tracking-widest uppercase truncate">${team}</span>
+                        <span class="text-[9px] text-white/70 font-bold flex items-center gap-1"><i class="fas fa-users"></i> ${teamPlayerCount} Sporcu</span>
                     </div>
-                    <div class="flex flex-col items-center justify-center bg-rose-500/10 rounded-xl py-2 sm:py-2.5 border border-rose-500/30">
-                        <div class="text-[8px] sm:text-[9px] text-rose-400 font-bold uppercase tracking-widest mb-0.5">MAĞ</div>
-                        <div class="text-base sm:text-lg font-black text-rose-400 leading-none">${l}</div>
-                    </div>
-                    <div class="flex flex-col items-center justify-center bg-yellow-500/10 rounded-xl py-2 sm:py-2.5 border border-yellow-400/20">
-                        <div class="text-[8px] sm:text-[9px] text-yellow-100 font-bold uppercase tracking-widest mb-0.5">GEL</div>
-                        <div class="text-base sm:text-lg font-black text-white leading-none">${n}</div>
+                    <div class="grid grid-cols-4 gap-1.5 sm:gap-2 relative z-10 mt-auto">
+                        <div class="flex flex-col items-center justify-center bg-blue-500/10 rounded-xl py-2 sm:py-2.5 border border-blue-400/20">
+                            <div class="text-[8px] sm:text-[9px] text-blue-200 font-bold uppercase tracking-widest mb-0.5">TOP</div>
+                            <div class="text-base sm:text-lg font-black text-white leading-none">${p + n}</div>
+                        </div>
+                        <div class="flex flex-col items-center justify-center bg-emerald-500/10 rounded-xl py-2 sm:py-2.5 border border-emerald-500/30">
+                            <div class="text-[8px] sm:text-[9px] text-emerald-400 font-bold uppercase tracking-widest mb-0.5">GAL</div>
+                            <div class="text-base sm:text-lg font-black text-emerald-400 leading-none">${w}</div>
+                        </div>
+                        <div class="flex flex-col items-center justify-center bg-rose-500/10 rounded-xl py-2 sm:py-2.5 border border-rose-500/30">
+                            <div class="text-[8px] sm:text-[9px] text-rose-400 font-bold uppercase tracking-widest mb-0.5">MAĞ</div>
+                            <div class="text-base sm:text-lg font-black text-rose-400 leading-none">${l}</div>
+                        </div>
+                        <div class="flex flex-col items-center justify-center bg-yellow-500/10 rounded-xl py-2 sm:py-2.5 border border-yellow-400/20">
+                            <div class="text-[8px] sm:text-[9px] text-yellow-100 font-bold uppercase tracking-widest mb-0.5">GEL</div>
+                            <div class="text-base sm:text-lg font-black text-white leading-none">${n}</div>
+                        </div>
                     </div>
                 </div>
             </div>`;
@@ -1054,13 +1098,13 @@
                         if (isGroupComplete) {
                             rankBadge = `<div class="absolute -top-2 -right-2 bg-yellow-400 text-yellow-900 text-[8px] font-black px-1.5 py-0.5 rounded-md flex items-center gap-1 shadow-md border border-yellow-200 z-10" title="Grup Şampiyonu"><i class="fas fa-trophy"></i> 1. TAKIM</div>`;
                         } else {
-                            rankBadge = `<div class="absolute -top-2 -right-2 bg-[#e0f2fe] text-[#0369a1] text-[8px] font-black px-1.5 py-0.5 rounded-md flex items-center gap-1 shadow-md border border-[#bae6fd] z-10" title="Anlık Lider"><i class="fas fa-chart-line"></i> GRUP 1.</div>`;
+                            rankBadge = `<div class="absolute -top-2 -right-2 bg-[#004684] text-white text-[8px] font-black px-1.5 py-0.5 rounded-md flex items-center gap-1 shadow-md border border-[#003366] z-10" title="Anlık Lider"><i class="fas fa-chart-line"></i> GRUP 1.</div>`;
                         }
                     } else if (ourTeamIndex === 1) {
                         if (isGroupComplete) {
                             rankBadge = `<div class="absolute -top-2 -right-2 bg-slate-200 text-slate-700 text-[8px] font-black px-1.5 py-0.5 rounded-md flex items-center gap-1 shadow-md border border-slate-300 z-10" title="Grup İkincisi"><i class="fas fa-trophy text-slate-500"></i> 2. TAKIM</div>`;
                         } else {
-                            rankBadge = `<div class="absolute -top-2 -right-2 bg-slate-100 text-slate-600 text-[8px] font-black px-1.5 py-0.5 rounded-md flex items-center gap-1 shadow-md border border-slate-200 z-10" title="Anlık İkinci"><i class="fas fa-chart-line"></i> GRUP 2.</div>`;
+                            rankBadge = `<div class="absolute -top-2 -right-2 bg-[#ffef03] text-[#004684] text-[8px] font-black px-1.5 py-0.5 rounded-md flex items-center gap-1 shadow-md border border-[#e6d800] z-10" title="Anlık İkinci"><i class="fas fa-chart-line"></i> GRUP 2.</div>`;
                         }
                     }
                 }
@@ -1247,13 +1291,13 @@
                             if (isGroupComplete) {
                                 rankBadge = `<div class="ml-2 bg-yellow-400 text-yellow-900 text-[8px] font-black px-1.5 py-0.5 rounded flex items-center gap-1 shadow-sm shrink-0 whitespace-nowrap" title="Şampiyon"><i class="fas fa-trophy"></i> 1. TAKIM</div>`;
                             } else {
-                                rankBadge = `<div class="ml-2 bg-[#e0f2fe] text-[#0369a1] text-[8px] font-black px-1.5 py-0.5 rounded flex items-center gap-1 shadow-sm shrink-0 whitespace-nowrap" title="Anlık Lider"><i class="fas fa-chart-line"></i> GRUP 1.</div>`;
+                                rankBadge = `<div class="ml-2 bg-[#004684] text-white text-[8px] font-black px-1.5 py-0.5 rounded flex items-center gap-1 shadow-sm shrink-0 whitespace-nowrap" title="Anlık Lider"><i class="fas fa-chart-line"></i> GRUP 1.</div>`;
                             }
                         } else if (i === 1) {
                             if (isGroupComplete) {
                                 rankBadge = `<div class="ml-2 bg-slate-200 text-slate-700 text-[8px] font-black px-1.5 py-0.5 rounded flex items-center gap-1 shadow-sm shrink-0 whitespace-nowrap" title="İkinci"><i class="fas fa-trophy text-slate-500"></i> 2. TAKIM</div>`;
                             } else {
-                                rankBadge = `<div class="ml-2 bg-slate-100 text-slate-600 text-[8px] font-black px-1.5 py-0.5 rounded flex items-center gap-1 shadow-sm shrink-0 whitespace-nowrap" title="Anlık İkinci"><i class="fas fa-chart-line"></i> GRUP 2.</div>`;
+                                rankBadge = `<div class="ml-2 bg-[#ffef03] text-[#004684] text-[8px] font-black px-1.5 py-0.5 rounded flex items-center gap-1 shadow-sm shrink-0 whitespace-nowrap" title="Anlık İkinci"><i class="fas fa-chart-line"></i> GRUP 2.</div>`;
                             }
                         }
                     }
@@ -1480,37 +1524,175 @@
         
         document.getElementById('whatsapp-modal').style.display = 'flex';
         document.getElementById('wa-note').value = '';
+        document.getElementById('wa-jersey').value = '';
+        document.getElementById('wa-new-player').value = '';
         
         const played = isMatchPlayed(m);
         document.getElementById('wa-match-info').innerHTML = `
-            <div class="flex-1 text-right text-xs font-black uppercase text-slate-800">${cleanTeamName(m.t1)}</div>
-            <div class="shrink-0 px-3 py-1 bg-slate-200 rounded-lg text-sm font-black">${played ? `${m.s1}-${m.s2}` : 'VS'}</div>
-            <div class="flex-1 text-left text-xs font-black uppercase text-slate-800">${cleanTeamName(m.t2)}</div>
+            <div class="flex-1 flex flex-col items-center justify-center gap-1 text-center">
+                ${getLogoHtml(m.t1, "w-10 h-10 sm:w-12 sm:h-12")}
+                <span class="text-[10px] font-black uppercase text-slate-800 leading-tight">${cleanTeamName(m.t1)}</span>
+            </div>
+            <div class="shrink-0 flex items-center justify-center px-2">
+                <div class="px-3 py-1.5 bg-slate-200 rounded-xl text-base font-black text-slate-700">${played ? `${m.s1} - ${m.s2}` : 'VS'}</div>
+            </div>
+            <div class="flex-1 flex flex-col items-center justify-center gap-1 text-center">
+                ${getLogoHtml(m.t2, "w-10 h-10 sm:w-12 sm:h-12")}
+                <span class="text-[10px] font-black uppercase text-slate-800 leading-tight">${cleanTeamName(m.t2)}</span>
+            </div>
         `;
 
-        const rSec = document.getElementById('wa-roster-section');
-        if(!played) { rSec.classList.remove('hidden'); } else { rSec.classList.add('hidden'); }
+        const futureSec = document.getElementById('wa-future-section');
+        const playedSec = document.getElementById('wa-played-section');
+
+        if (!played) { 
+            futureSec.classList.remove('hidden'); 
+            playedSec.classList.add('hidden');
+            
+            // Kadroyu Çek ve state.currentWaRoster'a ata
+            state.currentWaRoster = [];
+            const cat = getGroupCode(m);
+            let targetRoster = null;
+            for(let key in state.rosters) {
+                if(superNormalize(cat).includes(superNormalize(key)) || superNormalize(key).includes(superNormalize(cat))) {
+                    targetRoster = state.rosters[key]; break;
+                }
+            }
+
+            if (targetRoster && targetRoster.players) {
+                state.currentWaRoster = targetRoster.players.map(p => ({
+                    name: p.name,
+                    pos: p.pos || '',
+                    no: p.no || ''
+                }));
+            }
+            renderWaRoster();
+        } else {
+            futureSec.classList.add('hidden'); 
+            playedSec.classList.remove('hidden');
+            
+            // Oynanmış maç ise set inputunu doldur
+            document.getElementById('wa-sets-input').value = (m.sets && m.sets !== '-') ? m.sets : '';
+        }
+    }
+
+    function renderWaRoster() {
+        const container = document.getElementById('wa-roster-list');
+        if(state.currentWaRoster.length === 0) {
+            container.innerHTML = '<div class="text-xs text-slate-400 text-center py-2 italic">Bu kategori için kadro bulunamadı. Lütfen manuel ekleyin.</div>';
+            return;
+        }
+
+        container.innerHTML = state.currentWaRoster.map((p, idx) => `
+            <div class="flex items-center justify-between bg-white border border-slate-100 p-2 rounded-lg shadow-sm">
+                <div class="flex items-center gap-2">
+                    <span class="text-[10px] font-black bg-brand text-[#004684] px-1.5 py-0.5 rounded leading-none">${p.no || '-'}</span>
+                    <span class="text-[11px] font-black text-slate-800 uppercase">${p.name}</span>
+                    ${p.pos && p.pos !== 'Oyuncu' && p.pos !== 'MEVKİ' ? `<span class="text-[9px] font-bold text-slate-400 uppercase">(${p.pos})</span>` : ''}
+                </div>
+                <button onclick="removeWaPlayer(${idx})" class="text-rose-400 hover:text-rose-600 w-6 h-6 flex items-center justify-center rounded-full hover:bg-rose-50 transition-colors">
+                    <i class="fas fa-trash-alt text-[10px]"></i>
+                </button>
+            </div>
+        `).join('');
+    }
+
+    function removeWaPlayer(idx) {
+        state.currentWaRoster.splice(idx, 1);
+        renderWaRoster();
+    }
+
+    function addWaPlayer() {
+        const input = document.getElementById('wa-new-player');
+        const val = input.value.trim();
+        if(!val) return;
+
+        // Girilen isimde "-" varsa mevkisini otomatik ayırmak için ufak bir mantık (Örn: "Ahmet - Pasör")
+        let name = val;
+        let pos = '';
+        if (val.includes('-')) {
+            const parts = val.split('-');
+            name = parts[0].trim();
+            pos = parts.slice(1).join('-').trim();
+        }
+
+        state.currentWaRoster.push({
+            name: name,
+            pos: pos,
+            no: '-'
+        });
+
+        input.value = '';
+        renderWaRoster();
     }
 
     function sendWhatsapp() {
         const m = state.currentInteractionMatch;
         const played = isMatchPlayed(m);
         
-        let text = `🏐 *${APP_CONFIG.clubDisplayName} - MAÇ BİLGİSİ*\n\n🏆 *Kategori:* ${getGroupCode(m)}\n🆚 *Maç:* ${cleanTeamName(m.t1)} vs ${cleanTeamName(m.t2)}\n📅 *Tarih:* ${m.date} - ${m.time}\n📍 *Salon:* ${m.venue}\n`;
-        
+        let text = "";
+
         if (played) { 
-            text += `📊 *Sonuç:* ${m.s1} - ${m.s2}\n`; 
-            if (m.sets && m.sets !== '-') text += `🔢 *Setler:* ${m.sets}\n`; 
+            // MAÇ SONUCU PAYLAŞIMI
+            text += `🏐 *${APP_CONFIG.clubDisplayName} - MAÇ SONUCU*\n\n`;
+            text += `🏆 *Kategori:* ${getGroupCode(m)}\n`;
+            text += `📅 *Tarih:* ${m.date} - ${m.time}\n`;
+            text += `📍 *Salon:* ${m.venue}\n\n`;
+            
+            // Skor ve takımlar tek satırda birleşti
+            text += `📊 *Maç Sonucu:* ${cleanTeamName(m.t1)} *${m.s1} - ${m.s2}* ${cleanTeamName(m.t2)}\n`; 
+            
+            const setsValue = document.getElementById('wa-sets-input').value.trim();
+            if (setsValue && setsValue !== '-') {
+                // Sadece skor sayılarını (Örn: 25-20) çeker ve set numaralandırması yapar
+                const setMatches = setsValue.match(/\d+\s*-\s*\d+/g);
+                if (setMatches && setMatches.length > 0) {
+                    text += `🔢 *Setler:*\n`;
+                    setMatches.forEach((s, idx) => {
+                        text += `  • Set ${idx + 1}: ${s}\n`;
+                    });
+                } else {
+                    text += `🔢 *Setler:* ${setsValue}\n`; 
+                }
+            }
+            
+            const note = document.getElementById('wa-note').value.trim();
+            if (note) text += `\n📌 *Not:* ${note}\n`;
+            
         } else {
+            // GELECEK MAÇ PAYLAŞIMI
+            text += `🏐 *${APP_CONFIG.clubDisplayName} - MAÇ BİLGİSİ*\n\n`;
+            text += `🏆 *Kategori:* ${getGroupCode(m)}\n`;
+            text += `🆚 *Maç:* ${cleanTeamName(m.t1)} vs ${cleanTeamName(m.t2)}\n`;
+            text += `📅 *Tarih:* ${m.date} - ${m.time}\n`;
+            text += `📍 *Salon:* ${m.venue}\n`;
+
             const time = document.getElementById('wa-meet-time').value;
             const loc = document.getElementById('wa-meet-loc').value;
             if(time || loc) {
                 text += `\n⏰ *Toplanma:* ${time} ${loc ? '- '+loc : ''}\n`;
             }
+
+            const jersey = document.getElementById('wa-jersey').value.trim();
+            if (jersey) {
+                text += `👕 *Maç Forması:* ${jersey}\n`;
+            }
+            
+            const note = document.getElementById('wa-note').value.trim();
+            if (note) text += `\n📌 *Not:* ${note}\n`;
+
+            // Kadroyu WhatsApp Mesajına Dahil Etme
+            if (state.currentWaRoster && state.currentWaRoster.length > 0) {
+                text += `\n👥 *MAÇ KADROSU*\n`;
+                state.currentWaRoster.forEach((p, idx) => {
+                    let pInfo = `${idx + 1}. ${p.name}`;
+                    if (p.pos && p.pos !== 'Oyuncu' && p.pos !== 'MEVKİ') {
+                        pInfo += ` (${p.pos})`;
+                    }
+                    text += `${pInfo}\n`;
+                });
+            }
         }
-        
-        const note = document.getElementById('wa-note').value.trim();
-        if (note) text += `\n📌 *Not:* ${note}\n`;
 
         window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
         closeModal('whatsapp-modal');
