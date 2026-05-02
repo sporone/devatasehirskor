@@ -22,6 +22,22 @@
             regionDataUrl: "https://docs.google.com/spreadsheets/d/1czqD3fVZD-P8zuefoikXfIisTmqSbSxN-4YXiibxkic/export?format=csv&gid=0", // TVF İstanbul Ana Veri
             extraDataUrl: "https://docs.google.com/spreadsheets/d/1czqD3fVZD-P8zuefoikXfIisTmqSbSxN-4YXiibxkic/export?format=csv&gid=1656680680", // Eklenen Yeni Sayfa
             
+            // CANLI YENİLEME SÜRESİ (Milisaniye cinsinden. 60000 = 60 Saniye)
+            autoRefreshInterval: 60000,
+
+            // TVF veya ekstra verilerdeki hatalı takım/grup eşleşmelerini gizlemek için kullanılır:
+            ignoredTeamsInGroups: [
+                { team: "DEV ATAŞEHİR A", group: "MDKGL MDK KL C" },
+                { team: "DEV ATAŞEHİR A", group: "MDKGL MdK KL C" } // Olası harf farklılıkları için
+            ],
+
+            // TVF verilerinde eksik/yanlış yazılan takım isimlerini gruplara göre otomatik düzeltmek için:
+            nameCorrections: [
+                { group: "MDKGL MDK KL D", oldName: "DEV SPOR", newName: "DEV SPOR B" },
+                { group: "MDKGL MDK KL D", oldName: "DEV ATAŞEHİR", newName: "DEV SPOR B" },
+                { group: "MDKGL MDK KL D", oldName: "DEV ATAŞEHİR B", newName: "DEV SPOR B" }
+            ],
+
             // Kulüp Renkleri
             colors: {
                 primary: "#ffef03", // Ana Renk (Sarı)
@@ -176,7 +192,7 @@
                 <h3 class="text-sm font-black text-slate-800 uppercase tracking-tight flex items-center gap-2">
                     <i class="fas fa-layer-group text-brand"></i> Kategoriler
                 </h3>
-                <button onclick="fetchData()" class="w-8 h-8 rounded-full bg-slate-50 text-slate-500 flex items-center justify-center hover:bg-brand hover:text-white transition-colors">
+                <button onclick="fetchData(true)" class="w-8 h-8 rounded-full bg-slate-50 text-slate-500 flex items-center justify-center hover:bg-brand hover:text-white transition-colors" title="Verileri Şimdi Yenile">
                     <i class="fas fa-sync-alt text-xs"></i>
                 </button>
             </div>
@@ -464,8 +480,12 @@
     // ==========================================
     // 🌐 DATA FETCHING
     // ==========================================
-    async function fetchData() {
-        document.getElementById('loading-overlay').classList.remove('hidden');
+    
+    // Yükleme ekranı görünürlüğünü kontrol etmek için showLoading parametresi eklendi
+    async function fetchData(showLoading = true) {
+        if (showLoading) {
+            document.getElementById('loading-overlay').classList.remove('hidden');
+        }
         document.getElementById('header-club-name').innerText = APP_CONFIG.clubDisplayName;
         document.title = `${APP_CONFIG.clubDisplayName} | Portal`;
 
@@ -563,11 +583,38 @@
                 }
             });
 
+            // Hatalı (İstenmeyen) Grup/Takım eşleşmelerini filtrele (TVF hatalarını engeller)
+            const finalMatches = mergedMatches.filter(m => {
+                const mGroup = superNormalize(getGroupCode(m));
+                const t1Norm = superNormalize(m.t1);
+                const t2Norm = superNormalize(m.t2);
+                
+                // Kara listede (ignoredTeamsInGroups) eşleşme var mı kontrol et
+                const isIgnored = APP_CONFIG.ignoredTeamsInGroups.some(ignore => {
+                    const igGroup = superNormalize(ignore.group);
+                    const igTeam = superNormalize(ignore.team);
+                    return mGroup.includes(igGroup) && (t1Norm.includes(igTeam) || t2Norm.includes(igTeam));
+                });
+                
+                return !isIgnored; // Eğer ignored listesindeyse false döndür (çıkar)
+            });
+
+            // İsim Düzeltmeleri Uygula (TVF'nin yanlış veya eksik yazdığı takım adlarını düzeltir)
+            finalMatches.forEach(m => {
+                const mGroup = superNormalize(getGroupCode(m));
+                APP_CONFIG.nameCorrections.forEach(corr => {
+                    if (mGroup.includes(superNormalize(corr.group))) {
+                        if (superNormalize(m.t1) === superNormalize(corr.oldName)) m.t1 = corr.newName;
+                        if (superNormalize(m.t2) === superNormalize(corr.oldName)) m.t2 = corr.newName;
+                    }
+                });
+            });
+
             // Tüm maçları kaydet
-            state.rawMatches = mergedMatches;
+            state.rawMatches = finalMatches;
 
             // Sadece bizim kulübün maçlarını filtrele
-            state.clubMatches = mergedMatches.filter(m => isOurClub(m.t1) || isOurClub(m.t2));
+            state.clubMatches = finalMatches.filter(m => isOurClub(m.t1) || isOurClub(m.t2));
 
             // Kategorileri (Grupları) Çıkar
             state.categories = [...new Set(state.clubMatches.map(m => getGroupCode(m)))].sort();
@@ -575,9 +622,11 @@
             updateUI();
         } catch (e) {
             console.error(e);
-            alert("Veriler yüklenirken bir hata oluştu.");
+            if (showLoading) alert("Veriler yüklenirken bir hata oluştu.");
         } finally {
-            document.getElementById('loading-overlay').classList.add('hidden');
+            if (showLoading) {
+                document.getElementById('loading-overlay').classList.add('hidden');
+            }
         }
     }
 
@@ -732,7 +781,9 @@
                c.includes(superNormalize('MDKGL MDK LE 12')) ||
                c.includes(superNormalize('MDKGL MDK LE 13')) ||
                c.includes(superNormalize('MDKGL MDK LE 21')) ||
-               c.includes(superNormalize('MDKGL MDK LE 5'));
+               c.includes(superNormalize('MDKGL MDK LE 5')) ||
+               c.includes(superNormalize('MDKGL MDK KL C')) ||
+               c.includes(superNormalize('MDKGL MDK KL D'));
     }
 
     // Averaj Formatlama (MAX, MIN ve virgüllü gösterim)
@@ -1020,12 +1071,12 @@
         const isAllActive = state.selectedCategory === 'all';
         
         let html = `
-        <div onclick="selectCategory('all')" class="group flex items-center gap-3 p-2 rounded-2xl border transition-all duration-200 cursor-pointer ${isAllActive ? 'bg-brand border-brand shadow-md' : 'bg-white border-slate-200 hover:border-brand/40 hover:bg-brand/5 shadow-sm'}">
+        <div onclick="selectCategory('all')" class="group flex items-center gap-3 p-2 rounded-2xl border transition-all duration-200 cursor-pointer min-w-0 w-full ${isAllActive ? 'bg-brand border-brand shadow-md' : 'bg-white border-slate-200 hover:border-brand/40 hover:bg-brand/5 shadow-sm'}">
             <div class="w-10 h-10 shrink-0 rounded-xl flex items-center justify-center transition-colors ${isAllActive ? 'bg-white/30 text-[#004684]' : 'bg-slate-100 text-slate-400 group-hover:bg-white group-hover:text-brand'}">
                 <i class="fas fa-layer-group text-sm"></i>
             </div>
             <div class="flex-1 min-w-0 pr-1">
-                <div class="text-[11px] font-black uppercase truncate ${isAllActive ? 'text-[#004684]' : 'text-slate-700'}">Tüm Maçlar</div>
+                <div class="text-[11px] font-black uppercase truncate block w-full ${isAllActive ? 'text-[#004684]' : 'text-slate-700'}">Tüm Maçlar</div>
                 <div class="text-[9px] font-bold mt-0.5 ${isAllActive ? 'text-[#004684]/70' : 'text-slate-400'}">${totalMatches} Maç</div>
             </div>
         </div>`;
@@ -1036,12 +1087,18 @@
         state.categories.forEach(cat => {
             const isActive = state.selectedCategory === cat;
             
-            // Bu kategoriye ait sporcu sayısını bul (Fuzzy Match)
+            // Bu kategoriye ait sporcu sayısını bul (Daha akıllı eşleştirme)
             let playerCount = 0;
+            let bestMatchLength = 0;
             for(let key in state.rosters) {
-                if(superNormalize(cat).includes(superNormalize(key)) || superNormalize(key).includes(superNormalize(cat))) {
-                    playerCount = state.rosters[key].players.length; 
-                    break;
+                const normCat = superNormalize(cat);
+                const normKey = superNormalize(key);
+                if(normCat.includes(normKey) || normKey.includes(normCat)) {
+                    // En uzun (en spesifik) eşleşmeyi bul
+                    if (key.length > bestMatchLength) {
+                        bestMatchLength = key.length;
+                        playerCount = state.rosters[key].players.length; 
+                    }
                 }
             }
 
@@ -1058,6 +1115,9 @@
 
             // Grubun gerçekten bitip bitmediğini anlamak için TVF fikstüründeki o gruba ait TÜM maçları kontrol et
             const allGroupMatches = state.rawMatches.filter(m => getGroupCode(m) === cat);
+
+            let isGroupComplete = false;
+            let hasPlayedMatch = false;
 
             if (catPool.length > 0) {
                 // Gruptaki tüm gerçek takımları bul ve çift devre olup olmadığını analiz et
@@ -1082,12 +1142,12 @@
                 const expectedTotalMatches = multiplier * (realTeamsCount * (realTeamsCount - 1)) / 2;
 
                 // Fikstürdeki tüm maçlar oynandı mı VE fikstürde eksik maç yok mu?
-                const isGroupComplete = allGroupMatches.length > 0 && 
-                                        allGroupMatches.length >= expectedTotalMatches && 
-                                        allGroupMatches.every(m => isMatchPlayed(m));
+                isGroupComplete = allGroupMatches.length > 0 && 
+                                  allGroupMatches.length >= expectedTotalMatches && 
+                                  allGroupMatches.every(m => isMatchPlayed(m));
                                         
                 // Bizim havuzda en az 1 oynanmış maç var mı?
-                const hasPlayedMatch = catPool.some(m => isMatchPlayed(m));
+                hasPlayedMatch = catPool.some(m => isMatchPlayed(m));
                 
                 // Grupta en az 1 maç oynandıysa anlık veya kesin sıralama rozeti göster
                 if (hasPlayedMatch) {
@@ -1106,20 +1166,48 @@
                         } else {
                             rankBadge = `<div class="absolute -top-2 -right-2 bg-[#ffef03] text-[#004684] text-[8px] font-black px-1.5 py-0.5 rounded-md flex items-center gap-1 shadow-md border border-[#e6d800] z-10" title="Anlık İkinci"><i class="fas fa-chart-line"></i> GRUP 2.</div>`;
                         }
+                    } else if (ourTeamIndex > 1) {
+                        if (isGroupComplete) {
+                            rankBadge = `<div class="absolute -top-2 -right-2 bg-slate-200 text-slate-600 text-[8px] font-black px-1.5 py-0.5 rounded-md flex items-center gap-1 shadow-sm border border-slate-300 z-10"><i class="fas fa-check"></i> ${ourTeamIndex + 1}. TAKIM</div>`;
+                        } else {
+                            rankBadge = `<div class="absolute -top-2 -right-2 bg-slate-100 text-slate-500 text-[8px] font-black px-1.5 py-0.5 rounded-md flex items-center gap-1 shadow-sm border border-slate-200 z-10"><i class="fas fa-list-ol"></i> GRUP ${ourTeamIndex + 1}.</div>`;
+                        }
                     }
+                } else {
+                    // Skor girilmemişse YENİ GRUP rozeti
+                    rankBadge = `<div class="absolute -top-2 -right-2 bg-emerald-100 text-emerald-600 text-[8px] font-black px-1.5 py-0.5 rounded-md flex items-center gap-1 shadow-sm border border-emerald-200 z-10" title="Yeni Grup"><i class="fas fa-star text-emerald-500"></i> YENİ GRUP</div>`;
                 }
+            } else {
+                // Eğer grupta eşleşen hiç maç verisi yoksa
+                rankBadge = `<div class="absolute -top-2 -right-2 bg-emerald-100 text-emerald-600 text-[8px] font-black px-1.5 py-0.5 rounded-md flex items-center gap-1 shadow-sm border border-emerald-200 z-10" title="Yeni Grup"><i class="fas fa-star text-emerald-500"></i> YENİ GRUP</div>`;
             }
 
             const safeCat = cat.replace(/'/g, "\\'");
             
+            // Kartların Renk/Görünüm Tasarımı (Biten Gruplar İçin Ekstra Renk)
+            let cardStyle = 'bg-white border-slate-200 hover:border-brand/40 hover:bg-brand/5 shadow-sm';
+            let textStyle = 'text-slate-700';
+            let iconStyle = 'bg-white border border-slate-100 group-hover:border-transparent';
+
+            if (isActive) {
+                cardStyle = 'bg-brand border-brand shadow-md';
+                textStyle = 'text-[#004684]';
+                iconStyle = 'bg-white/30 border-transparent';
+            } else if (isGroupComplete) {
+                // Biten grupları belirginleştiren gri arka plan rengi
+                cardStyle = 'bg-slate-100 border-slate-300 shadow-none hover:bg-slate-200/60 opacity-90';
+                textStyle = 'text-slate-500';
+                iconStyle = 'bg-white/60 border-slate-200';
+            }
+
             html += `
-            <div onclick="selectCategory('${safeCat}')" class="relative group flex items-center gap-2.5 p-2 rounded-2xl border transition-all duration-200 cursor-pointer ${isActive ? 'bg-brand border-brand shadow-md' : 'bg-white border-slate-200 hover:border-brand/40 hover:bg-brand/5 shadow-sm'}">
+            <div onclick="selectCategory('${safeCat}')" class="relative group flex items-center gap-2.5 p-2 rounded-2xl border transition-all duration-200 cursor-pointer min-w-0 w-full ${cardStyle}">
                 ${rankBadge}
-                <div class="w-10 h-10 shrink-0 rounded-xl flex items-center justify-center p-1.5 overflow-hidden transition-colors ${isActive ? 'bg-white/30' : 'bg-white border border-slate-100 group-hover:border-transparent'}">
+                <div class="w-10 h-10 shrink-0 rounded-xl flex items-center justify-center p-1.5 overflow-hidden transition-colors ${iconStyle}">
                     ${clubLogoHtml}
                 </div>
                 <div class="flex-1 min-w-0 pr-2">
-                    <div class="text-[10px] sm:text-[11px] font-black uppercase truncate ${isActive ? 'text-[#004684]' : 'text-slate-700'}" title="${cat}">${cat}</div>
+                    <div class="text-[10px] sm:text-[11px] font-black uppercase block w-full overflow-hidden text-ellipsis whitespace-nowrap ${textStyle}" title="${cat}">${cat}</div>
                     <div class="flex items-center gap-1 text-[9px] font-bold mt-0.5 ${isActive ? 'text-[#004684]/70' : 'text-slate-400'}">
                         <i class="fas fa-users text-[8px]"></i> ${playerCount} Sporcu
                     </div>
@@ -1161,9 +1249,15 @@
         if (state.selectedCategory !== 'all') {
             // Find roster using fuzzy matching with category name
             let targetRoster = null;
+            let bestMatchLength = 0;
             for(let key in state.rosters) {
-                if(superNormalize(state.selectedCategory).includes(superNormalize(key)) || superNormalize(key).includes(superNormalize(state.selectedCategory))) {
-                    targetRoster = state.rosters[key]; break;
+                const normCat = superNormalize(state.selectedCategory);
+                const normKey = superNormalize(key);
+                if(normCat.includes(normKey) || normKey.includes(normCat)) {
+                    if (key.length > bestMatchLength) {
+                        bestMatchLength = key.length;
+                        targetRoster = state.rosters[key]; 
+                    }
                 }
             }
 
@@ -1434,7 +1528,7 @@
                     
                     <!-- ÜST BİLGİ ALANI: Grup | Tarih-Saat | Salon -->
                     <div class="flex flex-wrap items-center gap-1.5">
-                        <div class="text-[9px] font-black uppercase bg-slate-100 text-slate-600 px-2 py-1 rounded-md shrink-0">
+                        <div class="text-[9px] font-black uppercase bg-slate-100 text-slate-600 px-2 py-1 rounded-md shrink-0 truncate max-w-[120px] sm:max-w-[160px]" title="${getGroupCode(m)}">
                             ${getGroupCode(m)}
                         </div>
                         <div class="text-[9px] font-black uppercase bg-[#004684]/10 text-[#004684] px-2 py-1 rounded-md flex items-center gap-1 shrink-0">
@@ -1553,9 +1647,15 @@
             state.currentWaRoster = [];
             const cat = getGroupCode(m);
             let targetRoster = null;
+            let bestMatchLength = 0;
             for(let key in state.rosters) {
-                if(superNormalize(cat).includes(superNormalize(key)) || superNormalize(key).includes(superNormalize(cat))) {
-                    targetRoster = state.rosters[key]; break;
+                const normCat = superNormalize(cat);
+                const normKey = superNormalize(key);
+                if(normCat.includes(normKey) || normKey.includes(normCat)) {
+                    if (key.length > bestMatchLength) {
+                        bestMatchLength = key.length;
+                        targetRoster = state.rosters[key]; 
+                    }
                 }
             }
 
@@ -1816,7 +1916,13 @@
     // ==========================================
     // 🚀 INIT
     // ==========================================
-    window.onload = fetchData;
+    window.onload = () => {
+        fetchData(true);
+        // Otomatik yenileme özelliği (Arka planda sessiz çalışır)
+        if (APP_CONFIG.autoRefreshInterval > 0) {
+            setInterval(() => fetchData(false), APP_CONFIG.autoRefreshInterval);
+        }
+    };
 </script>
 
 </body>
