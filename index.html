@@ -9,44 +9,36 @@
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
     <script>
         // ==========================================
         // ⚙️ KULÜP AYARLARI (BURADAN DEĞİŞTİREBİLİRSİNİZ)
         // ==========================================
         const APP_CONFIG = {
-            // Excel'de takımın geçebileceği tüm olası isimler (Bu kelimelerden birini içermesi yeterli)
             clubSearchNames: ["DEV ATAŞEHİR", "DEV SPOR", "İSTANBUL DEV", "DEV İSTANBUL"], 
-            clubDisplayName: "Dev Ataşehir Voleybol", // Arayüzde görünecek şık isim
-            regionDataUrl: "https://docs.google.com/spreadsheets/d/1czqD3fVZD-P8zuefoikXfIisTmqSbSxN-4YXiibxkic/export?format=csv&gid=0", // TVF İstanbul Ana Veri
-            extraDataUrl: "https://docs.google.com/spreadsheets/d/1czqD3fVZD-P8zuefoikXfIisTmqSbSxN-4YXiibxkic/export?format=csv&gid=1656680680", // Eklenen Yeni Sayfa
-            
-            // CANLI YENİLEME SÜRESİ (Milisaniye cinsinden. 60000 = 60 Saniye)
+            clubDisplayName: "Dev Ataşehir Voleybol", 
+            regionDataUrl: "https://docs.google.com/spreadsheets/d/1czqD3fVZD-P8zuefoikXfIisTmqSbSxN-4YXiibxkic/export?format=csv&gid=0", 
+            extraDataUrl: "https://docs.google.com/spreadsheets/d/1czqD3fVZD-P8zuefoikXfIisTmqSbSxN-4YXiibxkic/export?format=csv&gid=1656680680", 
             autoRefreshInterval: 60000,
 
-            // TVF veya ekstra verilerdeki hatalı takım/grup eşleşmelerini gizlemek için kullanılır:
             ignoredTeamsInGroups: [
                 { team: "DEV ATAŞEHİR A", group: "MDKGL MDK KL C" },
-                { team: "DEV ATAŞEHİR A", group: "MDKGL MdK KL C" } // Olası harf farklılıkları için
+                { team: "DEV ATAŞEHİR A", group: "MDKGL MdK KL C" }
             ],
 
-            // TVF verilerinde eksik/yanlış yazılan takım isimlerini gruplara göre otomatik düzeltmek için:
             nameCorrections: [
                 { group: "MDKGL MDK KL D", oldName: "DEV SPOR", newName: "DEV SPOR B" },
                 { group: "MDKGL MDK KL D", oldName: "DEV ATAŞEHİR", newName: "DEV SPOR B" },
                 { group: "MDKGL MDK KL D", oldName: "DEV ATAŞEHİR B", newName: "DEV SPOR B" }
             ],
 
-            // Kulüp Renkleri
             colors: {
-                primary: "#ffef03", // Ana Renk (Sarı)
-                primaryLight: "#fffde6", // Açık Sarı
-                secondary: "#004684", // İkincil Renk (Lacivert)
+                primary: "#ffef03", 
+                primaryLight: "#fffde6", 
+                secondary: "#004684", 
             }
         };
 
-        // Tailwind konfigürasyonu
         tailwind.config = {
             theme: {
                 extend: {
@@ -67,84 +59,52 @@
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap');
-        
-        body { 
-            font-family: 'Plus Jakarta Sans', sans-serif; 
-            background-color: #f8fafc; 
-            color: #0f172a; 
-            -webkit-tap-highlight-color: transparent; 
-        }
-        
-        /* Modern Scrollbar */
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; color: #0f172a; -webkit-tap-highlight-color: transparent; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .custom-scrollbar::-webkit-scrollbar { width: 4px; height: 4px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        
-        .drag-scroll { cursor: grab; }
-        .drag-scroll:active { cursor: grabbing; }
-
-        /* Match Card Animations */
-        .match-card { 
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
-            background: white; 
-            border: 1px solid #f1f5f9; 
-        }
-        .match-card:hover { 
-            transform: translateY(-3px); 
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05); 
-            border-color: #e2e8f0; 
-        }
-        
-        /* Score Box */
-        .score-box { 
-            background: var(--tw-colors-brand-dark, #1e1b4b); 
-            color: white; 
-            min-width: 48px; 
-            height: 48px; 
-            border-radius: 12px; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            font-weight: 900; 
-            font-size: 1.5rem; 
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
-        }
-
-        /* Modal */
-        .modal-overlay { 
-            display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.85); 
-            z-index: 100; align-items: center; justify-content: center; padding: 1rem; 
-            backdrop-filter: blur(8px); 
-        }
-        .modal-content { 
-            background: white; border-radius: 1.5rem; padding: 1.5rem; width: 100%; 
-            max-width: 600px; position: relative; max-height: 90vh; overflow-y: auto; 
-            animation: modalPop 0.3s ease-out;
-        }
+        .match-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); background: white; border: 1px solid #f1f5f9; }
+        .match-card:hover { transform: translateY(-3px); box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05); border-color: #e2e8f0; }
+        .score-box { background: var(--tw-colors-brand-dark, #1e1b4b); color: white; min-width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1.5rem; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.85); z-index: 100; align-items: center; justify-content: center; padding: 1rem; backdrop-filter: blur(8px); }
+        .modal-content { background: white; border-radius: 1.5rem; padding: 1.5rem; width: 100%; max-width: 600px; position: relative; max-height: 90vh; overflow-y: auto; animation: modalPop 0.3s ease-out; }
         @keyframes modalPop { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-
-        /* Pulse for Live Matches */
-        .live-dot { 
-            width: 8px; height: 8px; background: #ef4444; border-radius: 50%; 
-            animation: pulse-red 1.5s infinite; display: inline-block;
-        }
-        @keyframes pulse-red { 
-            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); } 
-            70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); } 
-            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } 
-        }
-
         .team-logo-circle img { border-radius: 50%; object-fit: contain; }
-
-        /* Sarı (Primary) zemin üzerindeki yazıların Lacivert ve okunaklı olması için */
         .bg-brand { color: #004684 !important; }
+        
+        /* A4 Preview Ekranı İçin */
+        #cat-report-print-area { width: 100%; max-width: 210mm; min-height: 297mm; background: white; padding: 10mm; font-family: sans-serif; color: #1e293b; margin: 0 auto; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        @media (max-width: 800px) { #cat-report-print-area { padding: 10px; } }
+
+        /* YERLEŞİK YAZDIRMA (NATIVE BROWSER PRINT) İÇİN CSS KURALLARI */
+        @media print {
+            body { margin: 0; padding: 0; background: white; }
+            #app, .modal-overlay, #loading-overlay { display: none !important; }
+            
+            #print-section {
+                display: block !important;
+                width: 100%;
+                position: absolute;
+                top: 0;
+                left: 0;
+                background: white;
+                margin: 0;
+                padding: 5px;
+            }
+            
+            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            table { page-break-inside: auto; width: 100% !important; }
+            tr { page-break-inside: avoid; page-break-after: auto; }
+            thead { display: table-header-group; }
+            tfoot { display: table-footer-group; }
+        }
     </style>
 </head>
 <body class="antialiased selection:bg-brand selection:text-brand-dark">
 
 <!-- Loading Screen -->
-<div id="loading-overlay" class="fixed inset-0 bg-white z-[999] flex flex-col items-center justify-center gap-6 transition-opacity duration-300">
+<div id="loading-overlay" class="fixed inset-0 bg-white z-[9999] flex flex-col items-center justify-center gap-6 transition-opacity duration-300">
     <div class="relative w-24 h-24">
         <div class="absolute inset-0 border-4 border-brand-light rounded-full"></div>
         <div class="absolute inset-0 border-4 border-brand rounded-full border-t-transparent animate-spin"></div>
@@ -157,36 +117,24 @@
 </div>
 
 <div id="app" class="max-w-[1200px] mx-auto min-h-screen flex flex-col">
-    
     <!-- Header -->
     <header class="bg-brand-dark text-white pt-8 pb-20 px-4 relative overflow-hidden rounded-b-[3rem] shadow-xl">
         <div class="absolute top-0 right-0 w-96 h-96 bg-brand rounded-full opacity-20 blur-[80px] -mr-20 -mt-20 pointer-events-none"></div>
-        
         <div class="relative z-10 container mx-auto flex flex-col items-center text-center gap-4">
             <div id="main-club-logo" class="w-24 h-24 bg-white rounded-full p-2 shadow-2xl border-4 border-white/10 flex items-center justify-center overflow-hidden">
-                <!-- Logo will be injected here -->
                 <i class="fas fa-shield-alt text-4xl text-brand"></i>
             </div>
-            
             <div>
                 <h1 id="header-club-name" class="text-3xl md:text-4xl font-black tracking-tighter text-white">---</h1>
                 <p class="text-white/70 font-bold text-xs tracking-widest uppercase mt-1">Resmi Kulüp Portalı</p>
             </div>
-
-            <!-- 2026-2027 Sezonu Genel İstatistik (EKSİK OLAN TAŞIYICI KUTU EKLENDİ) -->
             <div id="season-stats-container" class="w-full max-w-4xl mt-6 px-1"></div>
-
-            <!-- Stats Bar (Dinamik 3'lü Takım Kartı) -->
-            <div id="header-stats-container" class="flex gap-3 sm:gap-4 mt-2 w-full max-w-5xl justify-start lg:justify-center overflow-x-auto no-scrollbar pb-2 px-1 pt-8 snap-x snap-mandatory scroll-smooth">
-                <!-- Javascript tarafından doldurulacak -->
-            </div>
+            <div id="header-stats-container" class="flex gap-3 sm:gap-4 mt-2 w-full max-w-5xl justify-start lg:justify-center overflow-x-auto no-scrollbar pb-2 px-1 pt-8 snap-x snap-mandatory scroll-smooth"></div>
         </div>
     </header>
 
     <!-- Main Content -->
     <main class="-mt-7 px-4 container mx-auto relative z-20 flex-1">
-        
-        <!-- Category Tabs -->
         <div class="bg-white shadow-xl shadow-slate-200/50 rounded-3xl p-4 sm:p-6 border border-slate-100 mb-6">
             <div class="flex items-center justify-between mb-4">
                 <h3 class="text-sm font-black text-slate-800 uppercase tracking-tight flex items-center gap-2">
@@ -196,17 +144,12 @@
                     <i class="fas fa-sync-alt text-xs"></i>
                 </button>
             </div>
-            
-            <div id="category-tabs" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
-                <!-- Categories will be injected here -->
-            </div>
+            <div id="category-tabs" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3"></div>
         </div>
 
-        <!-- Roster Section (Hidden by default, shown when category selected) -->
         <div id="roster-section" class="hidden mb-6">
             <div class="bg-[#004684] rounded-[1.5rem] p-5 sm:p-6 shadow-xl text-white relative overflow-hidden">
                 <div class="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-10 -mt-10 blur-2xl"></div>
-                
                 <div class="relative z-10 flex flex-row justify-between items-start border-b border-white/10 pb-4 mb-4">
                     <div class="flex flex-col">
                         <h3 class="text-sm sm:text-base font-black uppercase flex items-center gap-2 tracking-wide text-white">
@@ -214,31 +157,25 @@
                         </h3>
                         <p id="roster-category-name" class="text-[10px] text-white/50 font-bold uppercase tracking-widest mt-1 ml-7">---</p>
                     </div>
-                    <div id="roster-coach" class="bg-brand px-4 py-1.5 rounded-2xl text-[10px] font-black uppercase text-[#004684] shadow-sm tracking-wide mt-1">
-                        ---
-                    </div>
+                    <div id="roster-coach" class="bg-brand px-4 py-1.5 rounded-2xl text-[10px] font-black uppercase text-[#004684] shadow-sm tracking-wide mt-1">---</div>
                 </div>
-
-                <div id="roster-grid" class="relative z-10 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-                    <!-- Players -->
-                </div>
+                <div id="roster-grid" class="relative z-10 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3"></div>
             </div>
         </div>
 
-        <!-- Puan Durumu (Standings) Section -->
-        <div id="standings-section" class="hidden mb-8">
-            <!-- Puan durumu tablosu buraya gelecek -->
-        </div>
+        <div id="standings-section" class="hidden mb-8"></div>
 
-        <!-- Match List -->
         <div class="mb-4 flex items-center justify-between px-2">
             <h2 id="match-list-title" class="text-xl font-black text-brand-dark uppercase tracking-tighter">Tüm Maçlar</h2>
-            <div class="text-xs font-bold text-slate-500 bg-slate-200 px-3 py-1.5 rounded-lg" id="match-count-badge">0 Maç</div>
+            <div class="flex items-center gap-2">
+                <button id="btn-download-cat-pdf" onclick="openCategoryReportPreview(event)" class="hidden bg-rose-500 hover:bg-rose-600 text-white px-3 py-1.5 rounded-lg text-xs font-black uppercase tracking-wider flex items-center gap-1.5 shadow-sm transition-colors">
+                    <i class="fas fa-file-pdf"></i> <span class="hidden sm:inline">PDF Çıktısı</span>
+                </button>
+                <div class="text-xs font-bold text-slate-500 bg-slate-200 px-3 py-1.5 rounded-lg" id="match-count-badge">0 Maç</div>
+            </div>
         </div>
         
-        <div id="match-container" class="grid grid-cols-1 md:grid-cols-2 gap-4 pb-20">
-            <!-- Matches will be injected here -->
-        </div>
+        <div id="match-container" class="flex flex-col gap-4 pb-20"></div>
 
         <div id="empty-state" class="hidden flex-col items-center justify-center py-20 text-slate-400 text-center">
             <div class="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mb-4">
@@ -257,44 +194,33 @@
         <button onclick="closeModal('whatsapp-modal')" class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center bg-slate-100 rounded-full text-slate-500 hover:bg-slate-200 transition-colors z-20">
             <i class="fas fa-times"></i>
         </button>
-        
         <div class="text-center border-b pb-4 mb-4">
             <h3 class="text-xl font-black text-brand-dark uppercase tracking-tighter"><i class="fab fa-whatsapp text-[#25D366]"></i> Maç Paylaş</h3>
             <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Velilere ve Sporculara Bilgi Geçin</p>
         </div>
-
         <div id="wa-match-info" class="flex items-center justify-between gap-2 p-4 bg-slate-50 rounded-2xl border mb-4 text-center"></div>
-        
         <textarea id="wa-note" rows="2" placeholder="Velilere veya takıma not ekleyin... (İsteğe bağlı)" class="w-full bg-white border border-slate-200 rounded-xl p-3 text-sm font-semibold outline-none focus:border-brand mb-4"></textarea>
         
-        <!-- GELECEK MAÇ ALANI (Toplanma, Forma, Kadro) -->
         <div id="wa-future-section" class="border-t border-slate-100 pt-4 text-left hidden">
             <h4 class="text-xs font-black text-[#004684] uppercase mb-3"><i class="fas fa-clock text-brand"></i> Toplanma Bilgileri</h4>
             <div class="grid grid-cols-2 gap-3 mb-4">
                 <input type="time" id="wa-meet-time" class="bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm font-bold outline-none focus:border-brand">
                 <input type="text" id="wa-meet-loc" placeholder="Toplanma Yeri" class="bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm font-bold outline-none focus:border-brand">
             </div>
-
             <div class="mb-4">
                 <h4 class="text-xs font-black text-[#004684] uppercase mb-2"><i class="fas fa-tshirt text-brand"></i> Maç Forması Rengi</h4>
                 <input type="text" id="wa-jersey" placeholder="Örn: Sarı Formamızı Giyiyoruz" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm font-bold outline-none focus:border-brand">
             </div>
-
             <h4 class="text-xs font-black text-[#004684] uppercase mb-2 flex items-center justify-between">
                 <span><i class="fas fa-users text-brand"></i> Maç Kadrosu</span>
             </h4>
-            
-            <div id="wa-roster-list" class="flex flex-col gap-2 max-h-[25vh] overflow-y-auto custom-scrollbar pr-2 mb-3">
-                <!-- Oyuncular buraya JS ile basılacak -->
-            </div>
-            
+            <div id="wa-roster-list" class="flex flex-col gap-2 max-h-[25vh] overflow-y-auto custom-scrollbar pr-2 mb-3"></div>
             <div class="flex gap-2">
                 <input type="text" id="wa-new-player" placeholder="Yeni Sporcu (Örn: Ali - Pasör)" class="flex-1 bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold outline-none focus:border-brand">
                 <button onclick="addWaPlayer()" class="bg-brand text-[#004684] px-4 py-2 rounded-lg font-black text-xs hover:bg-[#e6d800] transition-colors"><i class="fas fa-plus"></i></button>
             </div>
         </div>
 
-        <!-- OYNANMIŞ MAÇ ALANI (Set Skorları) -->
         <div id="wa-played-section" class="border-t border-slate-100 pt-4 text-left hidden">
             <div class="mb-4">
                 <h4 class="text-xs font-black text-[#004684] uppercase mb-2"><i class="fas fa-list-ol text-brand"></i> Set Skorları</h4>
@@ -310,27 +236,23 @@
 </div>
 
 <!-- ========================================== -->
-<!-- 📊 RAPOR OLUŞTURMA MODALI -->
+<!-- 📊 MAÇ RAPOR OLUŞTURMA MODALI -->
 <!-- ========================================== -->
 <div id="report-modal" class="modal-overlay">
     <div class="modal-content shadow-2xl">
         <button onclick="closeModal('report-modal')" class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center bg-slate-100 rounded-full text-slate-500 hover:bg-slate-200 transition-colors z-20">
             <i class="fas fa-times"></i>
         </button>
-        
         <div class="text-center border-b pb-4 mb-4">
             <h3 class="text-xl font-black text-brand-dark uppercase tracking-tighter"><i class="fas fa-file-pdf text-rose-500"></i> Maç Raporu</h3>
             <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Antrenör Değerlendirme Ekranı</p>
         </div>
-
         <div id="rep-match-info" class="flex items-center justify-between gap-2 p-3 bg-slate-50 rounded-2xl border mb-4 text-center"></div>
-
         <div class="flex flex-col gap-4 max-h-[50vh] overflow-y-auto pr-2 custom-scrollbar">
             <div class="bg-brand-light/30 p-3 rounded-xl border border-brand/10">
                 <label class="text-[10px] font-black text-brand uppercase block mb-1">Maçın Genel Özeti</label>
                 <textarea id="rep-summary" rows="2" placeholder="Maç nasıldı? Eksikler ve artılar..." class="w-full bg-white border border-slate-200 rounded-lg p-2 text-xs font-semibold outline-none"></textarea>
             </div>
-
             <div class="bg-brand-light/30 p-3 rounded-xl border border-brand/10">
                 <label class="text-[10px] font-black text-brand uppercase block mb-2">Takım Performansı (1-5 Puan)</label>
                 <div class="grid grid-cols-2 sm:grid-cols-5 gap-2">
@@ -356,17 +278,48 @@
                     </div>
                 </div>
             </div>
-
             <div class="bg-brand-light/30 p-3 rounded-xl border border-brand/10">
                 <label class="text-[10px] font-black text-brand uppercase block mb-1">Gelecek Odakları</label>
                 <input type="text" id="rep-focus-tech" placeholder="Teknik Odak (Örn: Servis Karşılama)" class="w-full bg-white border border-slate-200 rounded-lg p-2 text-xs font-bold outline-none mb-2">
                 <input type="text" id="rep-focus-mental" placeholder="Mental Odak (Örn: Kriz anında iletişim)" class="w-full bg-white border border-slate-200 rounded-lg p-2 text-xs font-bold outline-none">
             </div>
         </div>
-
         <button onclick="downloadPDF(event)" class="w-full bg-brand hover:bg-brand-dark text-white py-4 rounded-xl font-black uppercase flex items-center justify-center gap-2 transition-all shadow-lg mt-4">
-            <i class="fas fa-file-download text-xl"></i> Raporu İndir (PDF)
+            <i class="fas fa-file-download text-xl"></i> Raporu Yazdır / PDF Kaydet
         </button>
+    </div>
+</div>
+
+<!-- ========================================== -->
+<!-- 📄 KATEGORİ RAPORU ÖNİZLEME MODALI -->
+<!-- ========================================== -->
+<div id="cat-report-modal" class="modal-overlay" style="z-index: 998;">
+    <div class="modal-content shadow-2xl !max-w-4xl !p-0 overflow-hidden flex flex-col h-[95vh] bg-slate-200 rounded-2xl">
+        <!-- Header -->
+        <div class="bg-white p-4 border-b flex items-center justify-between shrink-0 rounded-t-2xl">
+            <div>
+                <h3 class="text-lg font-black text-brand-dark uppercase tracking-tighter"><i class="fas fa-file-alt text-rose-500"></i> Kategori Raporu Önizleme</h3>
+                <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">Yazdırmadan önce son kontrol</p>
+            </div>
+            <button onclick="closeModal('cat-report-modal')" class="w-8 h-8 flex items-center justify-center bg-slate-100 border border-slate-200 rounded-full text-slate-500 hover:bg-slate-200 transition-colors">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <!-- Scrollable A4 Container -->
+        <div class="flex-1 overflow-y-auto p-2 sm:p-6 custom-scrollbar">
+            <div id="cat-report-print-area">
+                <!-- İçerik JS ile buraya basılacak -->
+            </div>
+        </div>
+
+        <!-- Footer / Action -->
+        <div class="p-4 bg-white border-t shrink-0 flex justify-end gap-3 rounded-b-2xl">
+            <button onclick="closeModal('cat-report-modal')" class="px-5 py-2 font-bold text-slate-500 hover:bg-slate-100 rounded-lg transition-colors">Kapat</button>
+            <button id="btn-actual-download" onclick="executeCategoryPDFDownload()" class="bg-rose-500 hover:bg-rose-600 text-white px-6 py-2 rounded-lg font-black uppercase tracking-wider flex items-center gap-2 shadow-md transition-colors">
+                <i class="fas fa-print"></i> PDF Kaydet / Yazdır
+            </button>
+        </div>
     </div>
 </div>
 
@@ -378,26 +331,19 @@
     const ROSTER_DATA = 'https://docs.google.com/spreadsheets/d/1mxNG1uveIfoxFE3G0hXgJpB31XRya3anaO96cBFKZY0/export?format=csv&gid=0';
 
     let state = {
-        rawMatches: [],  // Tüm ligin maçları (Puan durumu için)
-        clubMatches: [], // Sadece kulübün maçları
-        categories: [],  // Kulübün kategorileri (Genç, Yıldız vb.)
+        rawMatches: [], 
+        clubMatches: [],
+        categories: [], 
         selectedCategory: 'all',
         logos: {},
-        rosters: {},     // { "grup_adi": { coach: "", players: [] } }
+        rosters: {},     
         currentInteractionMatch: null,
-        currentWaRoster: [] // WhatsApp paylaşımındaki geçici kadro listesi
+        currentWaRoster: []
     };
 
-    // --- UTILS ---
-    
-    // Takım isimlerinin başındaki (H) - veya benzeri ekleri temizler,
-    // Çift boşlukları teke düşürür ve isim farklılıklarını önlemek için tümünü BÜYÜK HARFE çevirir.
     function cleanTeamName(name) {
         if (!name) return "";
-        return name.replace(/^\(H\)\s*[-–—]?\s*/i, '') // Baştaki (H) vb. ekleri sil
-                   .replace(/\s+/g, ' ')               // Çift/fazla boşlukları tek boşluk yap
-                   .trim()                             // Baş ve sondaki boşlukları al
-                   .toLocaleUpperCase('tr-TR');        // Türkçe karakterlere uygun olarak hepsini büyük harf yap
+        return name.replace(/^\(H\)\s*[-–—]?\s*/i, '').replace(/\s+/g, ' ').trim().toLocaleUpperCase('tr-TR');
     }
 
     function parseCSVLine(str) { 
@@ -412,14 +358,9 @@
     
     function superNormalize(s) { 
         if (!s) return ""; 
-        return s.toString().trim()
-            .replace(/İ/g, 'i').replace(/I/g, 'ı')
-            .toLocaleLowerCase('tr-TR')
-            .replace(/[ğ]/g,'g').replace(/[ü]/g,'u').replace(/[ş]/g,'s').replace(/[ö]/g,'o').replace(/[ç]/g,'c')
-            .replace(/[^a-z0-9]/g, ''); 
+        return s.toString().trim().replace(/İ/g, 'i').replace(/I/g, 'ı').toLocaleLowerCase('tr-TR').replace(/[ğ]/g,'g').replace(/[ü]/g,'u').replace(/[ş]/g,'s').replace(/[ö]/g,'o').replace(/[ç]/g,'c').replace(/[^a-z0-9]/g, ''); 
     }
 
-    // Bir takım isminin bizim kulübümüze ait olup olmadığını kontrol eder
     function isOurClub(teamName) {
         if (!teamName) return false;
         const normName = superNormalize(teamName);
@@ -434,16 +375,12 @@
         return (m.s1 && m.s1 !== '-' && m.s1 !== '') || (m.s2 && m.s2 !== '-' && m.s2 !== ''); 
     }
 
-    // Kulübün maçı kazanıp kazanmadığını kontrol eder
     function didClubWin(m) {
         if (!isMatchPlayed(m)) return null;
         const s1 = parseInt(m.s1 || 0), s2 = parseInt(m.s2 || 0);
-        const isClubT1 = isOurClub(m.t1);
-        const isClubT2 = isOurClub(m.t2);
-        
-        if (isClubT1) return s1 > s2;
-        if (isClubT2) return s2 > s1;
-        return null; // Maç iki rakip takım arasındaysa null döner
+        if (isOurClub(m.t1)) return s1 > s2;
+        if (isOurClub(m.t2)) return s2 > s1;
+        return null;
     }
 
     function getTodayString() { 
@@ -452,22 +389,16 @@
         return `${String(tr.getDate()).padStart(2, '0')}.${String(tr.getMonth() + 1).padStart(2, '0')}.${tr.getFullYear()}`; 
     }
 
-    // Gelecek maçlar için geri sayım hesaplama (Türkiye Saatine Göre)
     function getCountdown(dateStr, timeStr) {
         if (!dateStr || !timeStr || !dateStr.includes('.') || !timeStr.includes(':')) return null;
-        
         const [day, month, year] = dateStr.split('.');
         const [hour, minute] = timeStr.split(':');
         if (!year || !month || !day || !hour || !minute) return null;
-        
-        // Türkiye Saati (UTC+3) baz alınarak mutlak zaman farkı hesaplanır
         const matchDate = new Date(`${year}-${month}-${day}T${hour}:${minute}:00+03:00`);
-        const now = new Date(); // Kullanıcının o anki yerel saati üzerinden ms farkı
-        
+        const now = new Date(); 
         const diff = matchDate.getTime() - now.getTime();
         
         if (diff < 0) return "SKOR BEKLENİYOR"; 
-        
         const d = Math.floor(diff / (1000 * 60 * 60 * 24));
         const h = Math.floor((diff / (1000 * 60 * 60)) % 24);
         const m = Math.floor((diff / 1000 / 60) % 60);
@@ -477,27 +408,47 @@
         return `${m} DK KALDI`;
     }
 
-    // ==========================================
-    // 🌐 DATA FETCHING
-    // ==========================================
-    
-    // Yükleme ekranı görünürlüğünü kontrol etmek için showLoading parametresi eklendi
+    // YENİ EKLENEN VERİ NORMALİZE FONKSİYONU
+    function normalizeMatchTimeVenue(d, v, t) {
+        if (/^\d{1,2}:\d{2}$/.test(v)) {
+            t = v;
+            const dateMatch = d.match(/^[\d\.]+/);
+            if (dateMatch) {
+                v = d.replace(dateMatch[0], '').trim();
+                d = dateMatch[0];
+            } else {
+                v = d; d = "";
+            }
+        } 
+        if (!t && d.includes(':')) {
+            const timeMatch = d.match(/\d{1,2}:\d{2}/);
+            if (timeMatch) {
+                t = timeMatch[0];
+                d = d.replace(timeMatch[0], '').trim();
+            }
+        }
+        d = d.replace(/\.{2,}/g, '.').replace(/\.$/, '');
+        v = v.replace(/^[-\s]+|[-\s]+$/g, '');
+        return { d, v, t };
+    }
+
     async function fetchData(showLoading = true) {
         if (showLoading) {
-            document.getElementById('loading-overlay').classList.remove('hidden');
+            const overlay = document.getElementById('loading-overlay');
+            if (overlay) overlay.classList.remove('hidden');
         }
-        document.getElementById('header-club-name').innerText = APP_CONFIG.clubDisplayName;
+        
+        const headerName = document.getElementById('header-club-name');
+        if (headerName) headerName.innerText = APP_CONFIG.clubDisplayName;
+        
         document.title = `${APP_CONFIG.clubDisplayName} | Portal`;
 
         try {
-            // 1. Logolar ve Kadrolar (Paralel)
             await Promise.all([ fetchLogos(), fetchRosters() ]);
-            
-            // Ana kulüp logosunu header'a bas (İlk arama ismini temsilci olarak kullanıyoruz)
             const mainLogoHtml = getLogoHtml(APP_CONFIG.clubSearchNames[0], "w-full h-full border-none");
-            document.getElementById('main-club-logo').innerHTML = mainLogoHtml || `<i class="fas fa-shield-alt text-4xl text-brand"></i>`;
+            const logoContainer = document.getElementById('main-club-logo');
+            if(logoContainer) logoContainer.innerHTML = mainLogoHtml || `<i class="fas fa-shield-alt text-4xl text-brand"></i>`;
 
-            // 2. Maçları Çek (Her iki sayfayı da paralel çekiyoruz)
             const [r1, r2] = await Promise.all([
                 fetch(`${APP_CONFIG.regionDataUrl}&cb=${Date.now()}`),
                 fetch(`${APP_CONFIG.extraDataUrl}&cb=${Date.now()}`)
@@ -506,34 +457,29 @@
             const csv1 = await r1.text();
             const csv2 = await r2.text();
             
-            // 1. Sayfanın (Ana Veri) Ayrıştırılması
             const rawMatches1 = csv1.split(/\r?\n/).slice(1).map(line => { 
                 const p = parseCSVLine(line); 
+                let norm = normalizeMatchTimeVenue((p[0]||"").trim(), (p[1]||"").trim(), (p[2]||"").trim());
                 return { 
-                    date: (p[0]||"").trim(), venue: (p[1]||"").trim(), time: (p[2]||"").trim(), 
+                    date: norm.d, venue: norm.v, time: norm.t, 
                     t1: (p[3]||"").trim(), s1: (p[4]||"").trim()||"-", s2: (p[5]||"").trim()||"-", 
                     t2: (p[6]||"").trim(), sets: (p[7]||"").trim(), 
                     kume: (p[10]||"").trim(), ktg: (p[11]||"").trim(), tur: (p[12]||"").trim(), gr: (p[13]||"").trim() 
                 }; 
             }).filter(m => m.t1 && m.t2);
 
-            // 2. Sayfanın (Yeni Eklenen Sayfa) Ayrıştırılması
             const rawMatches2 = csv2.split(/\r?\n/).slice(1).map(line => { 
                 const p = parseCSVLine(line); 
                 if (p.length < 5) return null;
+                let norm = normalizeMatchTimeVenue((p[0]||"").trim(), (p[1]||"").trim(), (p[2]||"").trim());
                 return { 
-                    date: (p[0]||"").trim(), venue: (p[1]||"").trim(), time: (p[2]||"").trim(), 
+                    date: norm.d, venue: norm.v, time: norm.t, 
                     t1: (p[3]||"").trim(), s1: (p[4]||"").trim()||"-", s2: (p[5]||"").trim()||"-", 
                     t2: (p[6]||"").trim(), sets: (p[7]||"").trim(), 
-                    // Kullanıcı Ekstra listeyi TVF formatıyla aynı girdiyse p[11]'i, basit girdiyse p[8]'i al
-                    kume: (p[10]||"").trim(), 
-                    ktg: (p[11] || p[8] || "").trim(), 
-                    tur: (p[12]||"").trim(), 
-                    gr: (p[13]||"").trim() 
+                    kume: (p[10]||"").trim(), ktg: (p[11] || p[8] || "").trim(), tur: (p[12]||"").trim(), gr: (p[13]||"").trim() 
                 }; 
             }).filter(m => m && m.t1 && m.t2);
 
-            // İki listeyi birleştir ve Çift Kayıtları engelle (Akıllı Birleştirme v2)
             const mergedMatches = [...rawMatches1];
 
             rawMatches2.forEach(extraMatch => {
@@ -545,8 +491,6 @@
                 const gKey = superNormalize(getGroupCode(extraMatch));
 
                 let matchMerged = false;
-
-                // Ana listedeki (TVF) maçlarla karşılaştır
                 for (let i = 0; i < mergedMatches.length; i++) {
                     const m = mergedMatches[i];
                     const mT1 = superNormalize(m.t1);
@@ -554,52 +498,36 @@
                     const mKey = mT1 < mT2 ? `${mT1}-${mT2}` : `${mT2}-${mT1}`;
                     const mGKey = superNormalize(getGroupCode(m));
 
-                    // Aynı takımlar ve aynı grupsa (veya ekstra listede grup belirtilmemişse)
                     if (mKey === tKey && (mGKey === gKey || gKey === 'genel' || gKey === '')) {
-                        // Eğer ana maçta skor yoksa ve ekstra maçta skor varsa ez ve güncelle
-                        // (İlk bulduğu skorsuz maçı günceller, böylece rövanş maçları silinmez!)
                         if (!isMatchPlayed(m) && isMatchPlayed(extraMatch)) {
-                            m.s1 = extraMatch.s1;
-                            m.s2 = extraMatch.s2;
+                            m.s1 = extraMatch.s1; m.s2 = extraMatch.s2;
                             m.sets = extraMatch.sets && extraMatch.sets !== '-' ? extraMatch.sets : m.sets;
                             if (extraMatch.date && extraMatch.date !== '-') m.date = extraMatch.date;
                             if (extraMatch.time && extraMatch.time !== '-') m.time = extraMatch.time;
-                            matchMerged = true;
-                            break; 
+                            matchMerged = true; break; 
                         } else if (m.date === extraMatch.date && isMatchPlayed(m) && isMatchPlayed(extraMatch)) {
-                             // İkisi de skorluysa ve aynı tarihse en son geleni geçerli say
-                            m.s1 = extraMatch.s1;
-                            m.s2 = extraMatch.s2;
+                            m.s1 = extraMatch.s1; m.s2 = extraMatch.s2;
                             m.sets = extraMatch.sets && extraMatch.sets !== '-' ? extraMatch.sets : m.sets;
-                            matchMerged = true;
-                            break;
+                            matchMerged = true; break;
                         }
                     }
                 }
-
-                // Eğer ana listede eşleşen/güncellenecek bir maç bulunamadıysa yeni maç olarak listeye ekle
-                if (!matchMerged) {
-                    mergedMatches.push(extraMatch);
-                }
+                if (!matchMerged) mergedMatches.push(extraMatch);
             });
 
-            // Hatalı (İstenmeyen) Grup/Takım eşleşmelerini filtrele (TVF hatalarını engeller)
             const finalMatches = mergedMatches.filter(m => {
                 const mGroup = superNormalize(getGroupCode(m));
                 const t1Norm = superNormalize(m.t1);
                 const t2Norm = superNormalize(m.t2);
-                
-                // Kara listede (ignoredTeamsInGroups) eşleşme var mı kontrol et
                 const isIgnored = APP_CONFIG.ignoredTeamsInGroups.some(ignore => {
                     const igGroup = superNormalize(ignore.group);
                     const igTeam = superNormalize(ignore.team);
                     return mGroup.includes(igGroup) && (t1Norm.includes(igTeam) || t2Norm.includes(igTeam));
                 });
-                
-                return !isIgnored; // Eğer ignored listesindeyse false döndür (çıkar)
+                const isWithdrawn = t1Norm.includes('cekildi') || t2Norm.includes('cekildi');
+                return !isIgnored && !isWithdrawn; 
             });
 
-            // İsim Düzeltmeleri Uygula (TVF'nin yanlış veya eksik yazdığı takım adlarını düzeltir)
             finalMatches.forEach(m => {
                 const mGroup = superNormalize(getGroupCode(m));
                 APP_CONFIG.nameCorrections.forEach(corr => {
@@ -610,13 +538,8 @@
                 });
             });
 
-            // Tüm maçları kaydet
             state.rawMatches = finalMatches;
-
-            // Sadece bizim kulübün maçlarını filtrele
             state.clubMatches = finalMatches.filter(m => isOurClub(m.t1) || isOurClub(m.t2));
-
-            // Kategorileri (Grupları) Çıkar
             state.categories = [...new Set(state.clubMatches.map(m => getGroupCode(m)))].sort();
 
             updateUI();
@@ -625,7 +548,8 @@
             if (showLoading) alert("Veriler yüklenirken bir hata oluştu.");
         } finally {
             if (showLoading) {
-                document.getElementById('loading-overlay').classList.add('hidden');
+                const overlay = document.getElementById('loading-overlay');
+                if (overlay) overlay.classList.add('hidden');
             }
         }
     }
@@ -653,102 +577,97 @@
             const r = await fetch(`${ROSTER_DATA}&cb=${Date.now()}`); 
             const txt = await r.text();
             const rows = txt.split(/\r?\n/).map(parseCSVLine); 
-            
             state.rosters = {};
 
             let lastTeam = "", lastGroup = "", lastCoach = "";
+            
             for (let i = 1; i < rows.length; i++) {
                 const row = rows[i]; if (row.length < 2) continue;
                 
-                // H sütununu (row[7]) Rakipler olarak çekiyoruz
-                const tr = (row[0]||'').replace(/^\uFEFF/, '').trim(), gr = (row[1]||'').trim(), co = (row[2]||'').trim(), no = (row[3]||'').trim(), nm = (row[4]||'').trim(), ps = (row[5]||'').trim(), img = (row[6]||'').trim(), oppStr = (row[7]||'').trim();
+                const tr = (row[0]||'').replace(/^\uFEFF/, '').trim();
+                const gr = (row[1]||'').trim();                         
+                const co = (row[2]||'').trim();                         
+                const no = (row[3]||'').trim();                         
+                const nm = (row[4]||'').trim();                         
+                const ps = (row[5]||'').trim();                         
+                const img = (row[6]||'').trim();                        
+                const oppStr = (row[7]||'').trim();                     
+                const pStatus = (row[8]||'').trim();
                 
+                let attendanceCount = 0;
+                for (let j = 9; j <= 39; j++) {
+                    const val = (row[j] || '').trim().toLowerCase();
+                    if (val === 'true' || val === '1' || val === 'x' || val === '✓' || val === 'var') {
+                        attendanceCount++;
+                    }
+                }
+
                 if (tr) lastTeam = tr; 
                 if (gr) lastGroup = gr; 
                 if (co) lastCoach = co; 
                 
-                // Sadece bizim takımın kadrolarını ve rakiplerini al
                 if (isOurClub(lastTeam)) {
-                    const gKey = getGroupCode({kume:'', ktg: lastGroup, tur:'', gr:''}); // Kaba grup adı eşleştirmesi
+                    const gKey = getGroupCode({kume:'', ktg: lastGroup, tur:'', gr:''});
                     if (!state.rosters[gKey]) state.rosters[gKey] = { coach: lastCoach, players: [], opponents: [], teamName: lastTeam };
                     
                     if (nm) {
-                        state.rosters[gKey].players.push({ no: no || '-', name: nm, pos: ps || 'Oyuncu', img: img });
+                        state.rosters[gKey].players.push({ no: no || '-', name: nm, pos: ps || 'Oyuncu', img: img, status: pStatus, attendanceCount: attendanceCount });
                     }
-                    
-                    // Rakipler sütunu varsa parçala ve diziye ekle (virgülle ayrılmış olabilir)
                     if (oppStr) {
                         const ops = oppStr.split(',').map(s => s.trim()).filter(Boolean);
                         ops.forEach(op => {
-                            if (!state.rosters[gKey].opponents.includes(op)) {
-                                state.rosters[gKey].opponents.push(op);
-                            }
+                            if (!state.rosters[gKey].opponents.includes(op)) state.rosters[gKey].opponents.push(op);
                         });
                     }
                 }
             }
-        } catch(e) {}
+        } catch(e) { console.error(e); }
     }
 
     function getLogoHtml(teamName, classes = "w-10 h-10") {
         if (!teamName) return "";
         const norm = superNormalize(teamName);
         let url = null;
+        for (const k in state.logos) { if (norm.includes(k) || k.includes(norm)) { url = state.logos[k]; break; } }
         
-        // Birebir eşleşme veya içeriyorsa bul
-        for (const k in state.logos) { 
-            if (norm.includes(k) || k.includes(norm)) { url = state.logos[k]; break; } 
-        }
-
+        const fallbackHtml = `<div class="w-full h-full bg-slate-50 rounded-full flex items-center justify-center border border-slate-200"><span class="text-[10px] sm:text-xs font-black text-slate-300">${teamName.substring(0,2).toUpperCase()}</span></div>`;
+        
         return `<div class="team-logo-circle ${classes} relative shrink-0 flex items-center justify-center">
-            ${url ? `<img src="${url}" loading="lazy" class="w-full h-full object-contain drop-shadow-sm relative z-10" onerror="this.style.display='none'">` : `<div class="w-full h-full bg-slate-50 rounded-full flex items-center justify-center border border-slate-200"><span class="text-xs font-black text-slate-300">${teamName.substring(0,2).toUpperCase()}</span></div>`}
+            ${url ? `
+                <img src="${url}" loading="lazy" class="w-full h-full object-contain drop-shadow-sm relative z-10" onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';">
+                <div class="fallback-logo w-full h-full bg-slate-50 rounded-full flex items-center justify-center border border-slate-200" style="display:none;"><span class="text-[10px] sm:text-xs font-black text-slate-300">${teamName.substring(0,2).toUpperCase()}</span></div>
+            ` : fallbackHtml}
         </div>`;
     }
 
-    // ==========================================
-    // 🖥️ UI RENDERING
-    // ==========================================
-    
-    // Kategori için geçerli takımları (havuzu) bulma
     function getValidTeamsForCategory(category) {
         let validTeams = new Set();
-        
-        // 1. Bizim takımın tüm varyasyonlarını ekle (bu gruptaki)
         state.rawMatches.forEach(m => {
             if (getGroupCode(m) === category) {
                 if (isOurClub(m.t1)) validTeams.add(cleanTeamName(m.t1));
                 if (isOurClub(m.t2)) validTeams.add(cleanTeamName(m.t2));
             }
         });
-
-        // 2. Kadro Excel'inden gelen "Rakipler" sütununu ekle
         let targetRoster = null;
         for(let key in state.rosters) {
             if(superNormalize(category).includes(superNormalize(key)) || superNormalize(key).includes(superNormalize(category))) {
-                targetRoster = state.rosters[key]; 
-                break;
+                targetRoster = state.rosters[key]; break;
             }
         }
-
         if (targetRoster && targetRoster.opponents && targetRoster.opponents.length > 0) {
             targetRoster.opponents.forEach(op => {
                 const normOp = superNormalize(op);
                 const cleanOp = cleanTeamName(op);
                 let foundInMatches = false;
-                
-                // Tam ismi ham maçlardan bulmaya çalış
                 state.rawMatches.forEach(m => {
                     if (getGroupCode(m) === category) {
                         if (superNormalize(m.t1).includes(normOp)) { validTeams.add(cleanTeamName(m.t1)); foundInMatches = true; }
                         if (superNormalize(m.t2).includes(normOp)) { validTeams.add(cleanTeamName(m.t2)); foundInMatches = true; }
                     }
                 });
-                
-                // Eğer maçlarda henüz yoksa (0 puanla tabloda görünsün diye) manuel ekle
                 if (!foundInMatches) validTeams.add(cleanOp);
             });
         } else {
-            // Eğer Excel'de rakipler sütunu boşsa, fallback: Fikstürümüzde bizimle oynayan herkesi rakip say
             state.rawMatches.forEach(m => {
                 if (getGroupCode(m) === category) {
                     if (isOurClub(m.t1)) validTeams.add(cleanTeamName(m.t2));
@@ -756,175 +675,58 @@
                 }
             });
         }
-        
         return validTeams;
     }
 
-    // --- Kategori Kontrolcüleri ---
-    function isCategoryMinik(cat) {
-        if (!cat) return false;
-        const c = superNormalize(cat);
-        
-        // Tüm Minik (MNK) grupları (MNK1L dâhil olmak üzere) görseldeki resmi puan durumuna göre
-        // Galibiyete 2 Puan, Mağlubiyete 1 Puan veren sisteme tabidir.
-        return c.startsWith('mnk') || c.includes('mnk');
-    }
-
-    // Belirtilen grubun 2 Setlik (2-0, 2-1) formatta oynanıp oynanmadığını kontrol eder
+    function isCategoryMinik(cat) { return superNormalize(cat).startsWith('mnk') || superNormalize(cat).includes('mnk'); }
     function isCategoryTwoSet(cat) {
-        if (!cat) return false;
         const c = superNormalize(cat);
-        return c.startsWith('mnk') || c.includes('mnk') ||
-               c.includes(superNormalize('KKGL KK KL D')) ||
-               c.includes(superNormalize('KKGL KK LE 2')) ||
-               c.includes(superNormalize('MDKGL MDK LE 11')) ||
-               c.includes(superNormalize('MDKGL MDK LE 12')) ||
-               c.includes(superNormalize('MDKGL MDK LE 13')) ||
-               c.includes(superNormalize('MDKGL MDK LE 21')) ||
-               c.includes(superNormalize('MDKGL MDK LE 5')) ||
-               c.includes(superNormalize('MDKGL MDK KL C')) ||
-               c.includes(superNormalize('MDKGL MDK KL D'));
+        return c.startsWith('mnk') || c.includes('mnk') || c.includes(superNormalize('KKGL KK KL D')) || c.includes(superNormalize('KKGL KK LE 2')) || c.includes(superNormalize('MDKGL MDK LE 11')) || c.includes(superNormalize('MDKGL MDK LE 12')) || c.includes(superNormalize('MDKGL MDK LE 13')) || c.includes(superNormalize('MDKGL MDK LE 21')) || c.includes(superNormalize('MDKGL MDK LE 5')) || c.includes(superNormalize('MDKGL MDK KL C')) || c.includes(superNormalize('MDKGL MDK KL D'));
     }
+    function formatAveraj(a, v, isSet = true) { if (v === 0) return a > 0 ? "MAX" : "0"; if (a === 0 && v > 0) return "MIN"; return (a / v).toFixed(isSet ? 3 : 4).replace('.', ','); }
 
-    // Averaj Formatlama (MAX, MIN ve virgüllü gösterim)
-    function formatAveraj(a, v, isSet = true) {
-        if (v === 0) {
-            if (a > 0) return "MAX";
-            return "0";
-        }
-        if (a === 0 && v > 0) return "MIN";
-        return (a / v).toFixed(isSet ? 3 : 4).replace('.', ',');
-    }
-
-    // Voleybol Puan Hesaplama Sistemi
     function calculateStandings(category) {
         let teams = {};
         let validTeams = getValidTeamsForCategory(category);
-        
         const isMinik = isCategoryMinik(category);
-        const isTwoSetFormat = isCategoryTwoSet(category);
-
-        // Gruptaki tüm rakipleri 0 puanla tabloya peşin olarak ekle
+        
         validTeams.forEach(tName => {
-            teams[tName] = { 
-                name: tName, O: 0, G: 0, M: 0, A: 0, V: 0, P: 0, ASP: 0, VSP: 0,
-                w30: 0, w31: 0, w32: 0, l23: 0, l13: 0, l03: 0,
-                w20: 0, w21: 0, l12: 0, l02: 0
-            };
+            teams[tName] = { name: tName, O: 0, G: 0, M: 0, A: 0, V: 0, P: 0, ASP: 0, VSP: 0, w30: 0, w31: 0, w32: 0, l23: 0, l13: 0, l03: 0, w20: 0, w21: 0, l12: 0, l02: 0 };
         });
 
-        const matches = state.rawMatches.filter(m => 
-            getGroupCode(m) === category && 
-            isMatchPlayed(m) && 
-            validTeams.has(cleanTeamName(m.t1)) && 
-            validTeams.has(cleanTeamName(m.t2))
-        );
+        const matches = state.rawMatches.filter(m => getGroupCode(m) === category && isMatchPlayed(m) && validTeams.has(cleanTeamName(m.t1)) && validTeams.has(cleanTeamName(m.t2)));
 
         matches.forEach(m => {
-            const t1 = cleanTeamName(m.t1);
-            const t2 = cleanTeamName(m.t2);
-            let s1 = parseInt(m.s1) || 0;
-            let s2 = parseInt(m.s2) || 0;
-            
-            // Set içindeki sayı puanlarını (ASP, VSP) hesapla
+            const t1 = cleanTeamName(m.t1); const t2 = cleanTeamName(m.t2);
+            let s1 = parseInt(m.s1) || 0; let s2 = parseInt(m.s2) || 0;
             let asp1 = 0, vsp1 = 0, asp2 = 0, vsp2 = 0;
             if (m.sets && m.sets !== '-') {
                 const sA = [...m.sets.matchAll(/\((\d+)-(\d+)\)/g)];
-                sA.forEach(match => {
-                    asp1 += parseInt(match[1]);
-                    vsp1 += parseInt(match[2]);
-                    asp2 += parseInt(match[2]); // T2'nin aldığı, T1'in verdiği
-                    vsp2 += parseInt(match[1]); // T2'nin verdiği, T1'in aldığı
-                });
+                sA.forEach(match => { asp1 += parseInt(match[1]); vsp1 += parseInt(match[2]); asp2 += parseInt(match[2]); vsp2 += parseInt(match[1]); });
             }
+            teams[t1].O++; teams[t2].O++; teams[t1].A += s1; teams[t1].V += s2; teams[t2].A += s2; teams[t2].V += s1;
+            teams[t1].ASP += asp1; teams[t1].VSP += vsp1; teams[t2].ASP += asp2; teams[t2].VSP += vsp2;
 
-            teams[t1].O++;
-            teams[t2].O++;
-            teams[t1].A += s1;
-            teams[t1].V += s2;
-            teams[t2].A += s2;
-            teams[t2].V += s1;
-            
-            teams[t1].ASP += asp1;
-            teams[t1].VSP += vsp1;
-            teams[t2].ASP += asp2;
-            teams[t2].VSP += vsp2;
-
-            // Galibiyet - Mağlubiyet ve Set Skorları
             if (s1 > s2) {
-                teams[t1].G++;
-                teams[t2].M++;
-                
-                // 3'lü format için spesifik set kontrolleri
-                if (s1 === 3 && s2 === 0) { teams[t1].w30++; teams[t2].l03++; }
-                else if (s1 === 3 && s2 === 1) { teams[t1].w31++; teams[t2].l13++; }
-                else if (s1 === 3 && s2 === 2) { teams[t1].w32++; teams[t2].l23++; }
-                
-                // 2'li format (Minik, KKGL, MDKGL vb.) için SÜTUN kontrolü (Fark 1'den büyükse net skor)
-                if (s1 - s2 > 1) { 
-                    teams[t1].w20++; teams[t2].l02++; 
-                } else { 
-                    teams[t1].w21++; teams[t2].l12++; 
-                }
-
-                // Puanlama Kuralları Ayrımı
-                if (isMinik) {
-                    teams[t1].P += 2;
-                    teams[t2].P += 1;
-                } else {
-                    // Evrensel 3 Puan Sistemi Kuralı (Kazanılmış 2 veya 3 set fark etmez, matematiği korur)
-                    if (s1 - s2 > 1) { 
-                        teams[t1].P += 3;
-                    } else { 
-                        teams[t1].P += 2;
-                        teams[t2].P += 1;
-                    }
-                }
+                teams[t1].G++; teams[t2].M++;
+                if (s1 === 3 && s2 === 0) { teams[t1].w30++; teams[t2].l03++; } else if (s1 === 3 && s2 === 1) { teams[t1].w31++; teams[t2].l13++; } else if (s1 === 3 && s2 === 2) { teams[t1].w32++; teams[t2].l23++; }
+                if (s1 - s2 > 1) { teams[t1].w20++; teams[t2].l02++; } else { teams[t1].w21++; teams[t2].l12++; }
+                if (isMinik) { teams[t1].P += 2; teams[t2].P += 1; } else { if (s1 - s2 > 1) teams[t1].P += 3; else { teams[t1].P += 2; teams[t2].P += 1; } }
             } else if (s2 > s1) {
-                teams[t2].G++;
-                teams[t1].M++;
-
-                // 3'lü format için spesifik set kontrolleri
-                if (s2 === 3 && s1 === 0) { teams[t2].w30++; teams[t1].l03++; }
-                else if (s2 === 3 && s1 === 1) { teams[t2].w31++; teams[t1].l13++; }
-                else if (s2 === 3 && s1 === 2) { teams[t2].w32++; teams[t1].l23++; }
-                
-                // 2'li format (Minik, KKGL, MDKGL vb.) için SÜTUN kontrolü
-                if (s2 - s1 > 1) { 
-                    teams[t2].w20++; teams[t1].l02++; 
-                } else { 
-                    teams[t2].w21++; teams[t1].l12++; 
-                }
-
-                // Puanlama Kuralları Ayrımı
-                if (isMinik) {
-                    teams[t2].P += 2;
-                    teams[t1].P += 1;
-                } else {
-                    // Evrensel 3 Puan Sistemi Kuralı
-                    if (s2 - s1 > 1) { 
-                        teams[t2].P += 3;
-                    } else { 
-                        teams[t2].P += 2;
-                        teams[t1].P += 1;
-                    }
-                }
+                teams[t2].G++; teams[t1].M++;
+                if (s2 === 3 && s1 === 0) { teams[t2].w30++; teams[t1].l03++; } else if (s2 === 3 && s1 === 1) { teams[t2].w31++; teams[t1].l13++; } else if (s2 === 3 && s1 === 2) { teams[t2].w32++; teams[t1].l23++; }
+                if (s2 - s1 > 1) { teams[t2].w20++; teams[t1].l02++; } else { teams[t2].w21++; teams[t1].l12++; }
+                if (isMinik) { teams[t2].P += 2; teams[t1].P += 1; } else { if (s2 - s1 > 1) teams[t2].P += 3; else { teams[t2].P += 2; teams[t1].P += 1; } }
             }
         });
 
-        // Diziyi Puan > Galibiyet > Set Averajı > Sayı Averajı sıralamasına göre ayarla
         return Object.values(teams).sort((a, b) => {
-            if (b.P !== a.P) return b.P - a.P; // 1. Puan
-            if (b.G !== a.G) return b.G - a.G; // 2. Galibiyet
-            
-            let avgA = a.V === 0 ? (a.A > 0 ? 9999 : 0) : a.A / a.V;
-            let avgB = b.V === 0 ? (b.A > 0 ? 9999 : 0) : b.A / b.V;
-            if (avgB !== avgA) return avgB - avgA; // 3. Set Averajı (SAV)
-            
-            let spavA = a.VSP === 0 ? (a.ASP > 0 ? 9999 : 0) : a.ASP / a.VSP;
-            let spavB = b.VSP === 0 ? (b.ASP > 0 ? 9999 : 0) : b.ASP / b.VSP;
-            if (spavB !== spavA) return spavB - spavA; // 4. Sayı Averajı (SPAV)
-            
+            if (b.P !== a.P) return b.P - a.P; 
+            if (b.G !== a.G) return b.G - a.G; 
+            let avgA = a.V === 0 ? (a.A > 0 ? 9999 : 0) : a.A / a.V; let avgB = b.V === 0 ? (b.A > 0 ? 9999 : 0) : b.A / b.V;
+            if (avgB !== avgA) return avgB - avgA; 
+            let spavA = a.VSP === 0 ? (a.ASP > 0 ? 9999 : 0) : a.ASP / a.VSP; let spavB = b.VSP === 0 ? (b.ASP > 0 ? 9999 : 0) : b.ASP / b.VSP;
+            if (spavB !== spavA) return spavB - spavA; 
             return 0;
         });
     }
@@ -939,278 +741,143 @@
         const targetTeams = ["DEV ATAŞEHİR", "DEV SPOR", "İSTANBUL DEV"];
         const container = document.getElementById('header-stats-container');
         const seasonContainer = document.getElementById('season-stats-container');
-        let html = '';
+        if (!container) return;
 
-        // Genel istatistikleri tutacak değişkenler
-        let grandP = 0, grandW = 0, grandL = 0, grandN = 0;
+        let html = ''; let grandP = 0, grandW = 0, grandL = 0, grandN = 0;
 
         targetTeams.forEach(team => {
-            let p = 0, w = 0, l = 0, n = 0;
-            const normSearch = superNormalize(team);
-
+            let p = 0, w = 0, l = 0, n = 0; const normSearch = superNormalize(team);
             state.clubMatches.forEach(m => {
-                const t1Norm = superNormalize(m.t1);
-                const t2Norm = superNormalize(m.t2);
-
+                const t1Norm = superNormalize(m.t1); const t2Norm = superNormalize(m.t2);
                 if (t1Norm.includes(normSearch) || t2Norm.includes(normSearch)) {
-                    if (isMatchPlayed(m)) {
-                        p++;
-                        const s1 = parseInt(m.s1 || 0), s2 = parseInt(m.s2 || 0);
-                        const isT1 = t1Norm.includes(normSearch);
-                        const isT2 = t2Norm.includes(normSearch);
-
-                        // Takıma özel Galibiyet / Mağlubiyet kontrolü
-                        if (isT1 && s1 > s2) w++;
-                        else if (isT2 && s2 > s1) w++;
-                        else l++; 
-                    } else {
-                        n++;
-                    }
+                    if (isMatchPlayed(m)) { p++; const s1 = parseInt(m.s1 || 0), s2 = parseInt(m.s2 || 0); if ((t1Norm.includes(normSearch) && s1 > s2) || (t2Norm.includes(normSearch) && s2 > s1)) w++; else l++; } else n++;
                 }
             });
-
-            // Alt kartların verilerini "Genel Toplam" havuzuna aktar
-            grandP += p;
-            grandW += w;
-            grandL += l;
-            grandN += n;
+            grandP += p; grandW += w; grandL += l; grandN += n;
 
             let teamPlayerCount = 0;
-            for (let key in state.rosters) {
-                if (state.rosters[key].teamName && superNormalize(state.rosters[key].teamName).includes(normSearch)) {
-                    teamPlayerCount += state.rosters[key].players.length;
-                }
-            }
+            for (let key in state.rosters) { if (state.rosters[key].teamName && superNormalize(state.rosters[key].teamName).includes(normSearch)) teamPlayerCount += state.rosters[key].players.length; }
 
             html += `
             <div class="snap-center shrink-0 w-[260px] sm:w-[280px] relative">
-                <!-- Taşan ve Çerçevesiz Logo -->
-                <div class="absolute -top-8 left-1/2 transform -translate-x-1/2 w-14 h-14 z-20">
-                    ${getLogoHtml(team, "w-full h-full !border-none !bg-transparent drop-shadow-xl")}
-                </div>
-
-                <!-- Kart İçeriği -->
+                <div class="absolute -top-8 left-1/2 transform -translate-x-1/2 w-14 h-14 z-20">${getLogoHtml(team, "w-full h-full !border-none !bg-transparent drop-shadow-xl")}</div>
                 <div class="bg-white/5 backdrop-blur-md rounded-2xl p-3 sm:p-4 pt-12 border border-white/10 flex flex-col shadow-lg relative overflow-hidden h-full">
-                    <div class="absolute -right-4 -bottom-6 text-white/5 transform -rotate-12 pointer-events-none z-0">
-                        <i class="fas fa-chart-pie text-7xl"></i>
-                    </div>
+                    <div class="absolute -right-4 -bottom-6 text-white/5 transform -rotate-12 pointer-events-none z-0"><i class="fas fa-chart-pie text-7xl"></i></div>
                     <div class="flex flex-col items-center justify-center relative z-10 border-b border-white/10 pb-3 mb-3 gap-1 mt-3">
                         <span class="text-[11px] sm:text-xs font-black text-white tracking-widest uppercase truncate">${team}</span>
                         <span class="text-[9px] text-white/70 font-bold flex items-center gap-1"><i class="fas fa-users"></i> ${teamPlayerCount} Sporcu</span>
                     </div>
                     <div class="grid grid-cols-4 gap-1.5 sm:gap-2 relative z-10 mt-auto">
-                        <div class="flex flex-col items-center justify-center bg-blue-500/10 rounded-xl py-2 sm:py-2.5 border border-blue-400/20">
-                            <div class="text-[8px] sm:text-[9px] text-blue-200 font-bold uppercase tracking-widest mb-0.5">TOP</div>
-                            <div class="text-base sm:text-lg font-black text-white leading-none">${p + n}</div>
-                        </div>
-                        <div class="flex flex-col items-center justify-center bg-emerald-500/10 rounded-xl py-2 sm:py-2.5 border border-emerald-500/30">
-                            <div class="text-[8px] sm:text-[9px] text-emerald-400 font-bold uppercase tracking-widest mb-0.5">GAL</div>
-                            <div class="text-base sm:text-lg font-black text-emerald-400 leading-none">${w}</div>
-                        </div>
-                        <div class="flex flex-col items-center justify-center bg-rose-500/10 rounded-xl py-2 sm:py-2.5 border border-rose-500/30">
-                            <div class="text-[8px] sm:text-[9px] text-rose-400 font-bold uppercase tracking-widest mb-0.5">MAĞ</div>
-                            <div class="text-base sm:text-lg font-black text-rose-400 leading-none">${l}</div>
-                        </div>
-                        <div class="flex flex-col items-center justify-center bg-yellow-500/10 rounded-xl py-2 sm:py-2.5 border border-yellow-400/20">
-                            <div class="text-[8px] sm:text-[9px] text-yellow-100 font-bold uppercase tracking-widest mb-0.5">GEL</div>
-                            <div class="text-base sm:text-lg font-black text-white leading-none">${n}</div>
-                        </div>
+                        <div class="flex flex-col items-center justify-center bg-blue-500/10 rounded-xl py-2 sm:py-2.5 border border-blue-400/20"><div class="text-[8px] sm:text-[9px] text-blue-200 font-bold uppercase tracking-widest mb-0.5">TOP</div><div class="text-base sm:text-lg font-black text-white leading-none">${p + n}</div></div>
+                        <div class="flex flex-col items-center justify-center bg-emerald-500/10 rounded-xl py-2 sm:py-2.5 border border-emerald-500/30"><div class="text-[8px] sm:text-[9px] text-emerald-400 font-bold uppercase tracking-widest mb-0.5">GAL</div><div class="text-base sm:text-lg font-black text-emerald-400 leading-none">${w}</div></div>
+                        <div class="flex flex-col items-center justify-center bg-rose-500/10 rounded-xl py-2 sm:py-2.5 border border-rose-500/30"><div class="text-[8px] sm:text-[9px] text-rose-400 font-bold uppercase tracking-widest mb-0.5">MAĞ</div><div class="text-base sm:text-lg font-black text-rose-400 leading-none">${l}</div></div>
+                        <div class="flex flex-col items-center justify-center bg-yellow-500/10 rounded-xl py-2 sm:py-2.5 border border-yellow-400/20"><div class="text-[8px] sm:text-[9px] text-yellow-100 font-bold uppercase tracking-widest mb-0.5">GEL</div><div class="text-base sm:text-lg font-black text-white leading-none">${n}</div></div>
                     </div>
                 </div>
             </div>`;
         });
 
-        // 2026-2027 Sezonu Genel İstatistik Render
         if (seasonContainer) {
             seasonContainer.innerHTML = `
             <div class="bg-gradient-to-r from-brand to-yellow-400 rounded-2xl p-[2px] shadow-2xl mx-auto">
                 <div class="bg-brand-dark/95 backdrop-blur-xl rounded-[14px] p-4 sm:p-5 flex flex-col sm:flex-row items-center justify-between gap-5">
                     <div class="flex items-center gap-3 text-left w-full sm:w-auto">
-                        <div class="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center shrink-0 border border-white/20 shadow-inner">
-                            <i class="fas fa-trophy text-2xl text-brand drop-shadow-md"></i>
-                        </div>
-                        <div>
-                            <h2 class="text-lg sm:text-xl font-black text-white uppercase tracking-tighter drop-shadow-sm">2026 - 2027 Sezonu</h2>
-                            <p class="text-[10px] sm:text-xs font-bold text-brand uppercase tracking-widest">Tüm Kulüplerin Genel İstatistiği</p>
-                        </div>
+                        <div class="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center shrink-0 border border-white/20 shadow-inner"><i class="fas fa-trophy text-2xl text-brand drop-shadow-md"></i></div>
+                        <div><h2 class="text-lg sm:text-xl font-black text-white uppercase tracking-tighter drop-shadow-sm">2026 - 2027 Sezonu</h2><p class="text-[10px] sm:text-xs font-bold text-brand uppercase tracking-widest">Tüm Kulüplerin Genel İstatistiği</p></div>
                     </div>
-                    
                     <div class="grid grid-cols-4 sm:flex items-center justify-between sm:justify-end w-full sm:w-auto gap-2 sm:gap-6 bg-white/5 px-2 sm:px-4 py-3 rounded-xl border border-white/10">
-                        <div class="text-center">
-                            <div class="text-[8px] sm:text-[10px] font-bold text-blue-300 uppercase tracking-widest mb-1">TOPLAM</div>
-                            <div class="text-lg sm:text-2xl font-black text-white leading-none drop-shadow-md">${grandP + grandN}</div>
-                        </div>
-                        <div class="w-px h-8 bg-white/10 hidden sm:block"></div>
-                        <div class="text-center">
-                            <div class="text-[8px] sm:text-[10px] font-bold text-emerald-400 uppercase tracking-widest mb-1">GAL</div>
-                            <div class="text-lg sm:text-2xl font-black text-emerald-400 leading-none drop-shadow-md">${grandW}</div>
-                        </div>
-                        <div class="w-px h-8 bg-white/10 hidden sm:block"></div>
-                        <div class="text-center">
-                            <div class="text-[8px] sm:text-[10px] font-bold text-rose-400 uppercase tracking-widest mb-1">MAĞ</div>
-                            <div class="text-lg sm:text-2xl font-black text-rose-400 leading-none drop-shadow-md">${grandL}</div>
-                        </div>
-                        <div class="w-px h-8 bg-white/10 hidden sm:block"></div>
-                        <div class="text-center">
-                            <div class="text-[8px] sm:text-[10px] font-bold text-yellow-300 uppercase tracking-widest mb-1">GEL</div>
-                            <div class="text-lg sm:text-2xl font-black text-yellow-300 leading-none drop-shadow-md">${grandN}</div>
-                        </div>
+                        <div class="text-center"><div class="text-[8px] sm:text-[10px] font-bold text-blue-300 uppercase tracking-widest mb-1">TOPLAM</div><div class="text-lg sm:text-2xl font-black text-white leading-none drop-shadow-md">${grandP + grandN}</div></div><div class="w-px h-8 bg-white/10 hidden sm:block"></div>
+                        <div class="text-center"><div class="text-[8px] sm:text-[10px] font-bold text-emerald-400 uppercase tracking-widest mb-1">GAL</div><div class="text-lg sm:text-2xl font-black text-emerald-400 leading-none drop-shadow-md">${grandW}</div></div><div class="w-px h-8 bg-white/10 hidden sm:block"></div>
+                        <div class="text-center"><div class="text-[8px] sm:text-[10px] font-bold text-rose-400 uppercase tracking-widest mb-1">MAĞ</div><div class="text-lg sm:text-2xl font-black text-rose-400 leading-none drop-shadow-md">${grandL}</div></div><div class="w-px h-8 bg-white/10 hidden sm:block"></div>
+                        <div class="text-center"><div class="text-[8px] sm:text-[10px] font-bold text-yellow-300 uppercase tracking-widest mb-1">GEL</div><div class="text-lg sm:text-2xl font-black text-yellow-300 leading-none drop-shadow-md">${grandN}</div></div>
                     </div>
                 </div>
-            </div>
-            `;
+            </div>`;
         }
-
-        container.innerHTML = html;
     }
 
     function renderCategoryTabs() {
         const c = document.getElementById('category-tabs');
-        
-        const totalMatches = state.clubMatches.length;
+        if (!c) return;
         const isAllActive = state.selectedCategory === 'all';
-        
         let html = `
         <div onclick="selectCategory('all')" class="group flex items-center gap-3 p-2 rounded-2xl border transition-all duration-200 cursor-pointer min-w-0 w-full ${isAllActive ? 'bg-brand border-brand shadow-md' : 'bg-white border-slate-200 hover:border-brand/40 hover:bg-brand/5 shadow-sm'}">
-            <div class="w-10 h-10 shrink-0 rounded-xl flex items-center justify-center transition-colors ${isAllActive ? 'bg-white/30 text-[#004684]' : 'bg-slate-100 text-slate-400 group-hover:bg-white group-hover:text-brand'}">
-                <i class="fas fa-layer-group text-sm"></i>
-            </div>
+            <div class="w-10 h-10 shrink-0 rounded-xl flex items-center justify-center transition-colors ${isAllActive ? 'bg-white/30 text-[#004684]' : 'bg-slate-100 text-slate-400 group-hover:bg-white group-hover:text-brand'}"><i class="fas fa-layer-group text-sm"></i></div>
             <div class="flex-1 min-w-0 pr-1">
-                <div class="text-[11px] font-black uppercase truncate block w-full ${isAllActive ? 'text-[#004684]' : 'text-slate-700'}">Tüm Maçlar</div>
-                <div class="text-[9px] font-bold mt-0.5 ${isAllActive ? 'text-[#004684]/70' : 'text-slate-400'}">${totalMatches} Maç</div>
+                <div class="text-[11px] font-black uppercase block w-full overflow-hidden text-ellipsis whitespace-nowrap ${isAllActive ? 'text-[#004684]' : 'text-slate-700'}">Tüm Maçlar</div>
+                <div class="text-[9px] font-bold mt-0.5 ${isAllActive ? 'text-[#004684]/70' : 'text-slate-400'}">${state.clubMatches.length} Maç</div>
             </div>
         </div>`;
-        
-        // Kulüp logosunu al
+
         const clubLogoHtml = getLogoHtml(APP_CONFIG.clubSearchNames[0], "w-full h-full !border-none !shadow-none bg-transparent");
 
         state.categories.forEach(cat => {
             const isActive = state.selectedCategory === cat;
-            
-            // Bu kategoriye ait sporcu sayısını bul (Daha akıllı eşleştirme)
-            let playerCount = 0;
-            let bestMatchLength = 0;
+            let playerCount = 0, bestMatchLength = 0;
             for(let key in state.rosters) {
-                const normCat = superNormalize(cat);
-                const normKey = superNormalize(key);
-                if(normCat.includes(normKey) || normKey.includes(normCat)) {
-                    // En uzun (en spesifik) eşleşmeyi bul
-                    if (key.length > bestMatchLength) {
-                        bestMatchLength = key.length;
-                        playerCount = state.rosters[key].players.length; 
-                    }
+                if(superNormalize(cat).includes(superNormalize(key)) || superNormalize(key).includes(superNormalize(cat))) {
+                    if (key.length > bestMatchLength) { bestMatchLength = key.length; playerCount = state.rosters[key].players.length; }
                 }
             }
 
-            // Grup Tamamlanma & Derece Kontrolü
             let rankBadge = '';
             const catValidTeams = getValidTeamsForCategory(cat);
-            
-            // Bizim dahil olduğumuz puanlanabilir maç havuzu
-            const catPool = state.rawMatches.filter(m => 
-                getGroupCode(m) === cat && 
-                catValidTeams.has(cleanTeamName(m.t1)) && 
-                catValidTeams.has(cleanTeamName(m.t2))
-            );
-
-            // Grubun gerçekten bitip bitmediğini anlamak için TVF fikstüründeki o gruba ait TÜM maçları kontrol et
+            const catPool = state.rawMatches.filter(m => getGroupCode(m) === cat && catValidTeams.has(cleanTeamName(m.t1)) && catValidTeams.has(cleanTeamName(m.t2)));
             const allGroupMatches = state.rawMatches.filter(m => getGroupCode(m) === cat);
 
-            let isGroupComplete = false;
-            let hasPlayedMatch = false;
+            let isGroupComplete = false, hasPlayedMatch = false;
 
             if (catPool.length > 0) {
-                // Gruptaki tüm gerçek takımları bul ve çift devre olup olmadığını analiz et
                 const allGroupTeams = new Set();
-                let isDoubleRoundRobin = false;
-                const matchups = new Set();
-                
+                let isDoubleRoundRobin = false; const matchups = new Set();
                 allGroupMatches.forEach(m => {
-                    if(m.t1) allGroupTeams.add(cleanTeamName(m.t1));
-                    if(m.t2) allGroupTeams.add(cleanTeamName(m.t2));
-                    
+                    if(m.t1) allGroupTeams.add(cleanTeamName(m.t1)); if(m.t2) allGroupTeams.add(cleanTeamName(m.t2));
                     const pair = [cleanTeamName(m.t1), cleanTeamName(m.t2)].sort().join('|');
-                    if (matchups.has(pair)) isDoubleRoundRobin = true;
-                    matchups.add(pair);
+                    if (matchups.has(pair)) isDoubleRoundRobin = true; matchups.add(pair);
                 });
                 
-                // ANA KOD GÜNCELLEMESİ: Takım sayısını belirlerken Kadro Rakiplerini de dâhil et (Eksik fikstür koruması)
                 const realTeamsCount = Math.max(allGroupTeams.size, catValidTeams.size);
-                const isLeague1 = superNormalize(cat).includes('1l'); // 1. Ligler 2 devrelidir
-                const multiplier = (isDoubleRoundRobin || isLeague1) ? 2 : 1; // Barajı çarp
-                
+                const isLeague1 = superNormalize(cat).includes('1l');
+                const multiplier = (isDoubleRoundRobin || isLeague1) ? 2 : 1; 
                 const expectedTotalMatches = multiplier * (realTeamsCount * (realTeamsCount - 1)) / 2;
 
-                // Fikstürdeki tüm maçlar oynandı mı VE fikstürde eksik maç yok mu?
-                isGroupComplete = allGroupMatches.length > 0 && 
-                                  allGroupMatches.length >= expectedTotalMatches && 
-                                  allGroupMatches.every(m => isMatchPlayed(m));
-                                        
-                // Bizim havuzda en az 1 oynanmış maç var mı?
+                isGroupComplete = allGroupMatches.length > 0 && allGroupMatches.length >= expectedTotalMatches && allGroupMatches.every(m => isMatchPlayed(m));
                 hasPlayedMatch = catPool.some(m => isMatchPlayed(m));
                 
-                // Grupta en az 1 maç oynandıysa anlık veya kesin sıralama rozeti göster
                 if (hasPlayedMatch) {
                     const standings = calculateStandings(cat);
                     const ourTeamIndex = standings.findIndex(t => isOurClub(t.name));
                     
                     if (ourTeamIndex === 0) {
-                        if (isGroupComplete) {
-                            rankBadge = `<div class="absolute -top-2 -right-2 bg-yellow-400 text-yellow-900 text-[8px] font-black px-1.5 py-0.5 rounded-md flex items-center gap-1 shadow-md border border-yellow-200 z-10" title="Grup Şampiyonu"><i class="fas fa-trophy"></i> 1. TAKIM</div>`;
-                        } else {
-                            rankBadge = `<div class="absolute -top-2 -right-2 bg-[#004684] text-white text-[8px] font-black px-1.5 py-0.5 rounded-md flex items-center gap-1 shadow-md border border-[#003366] z-10" title="Anlık Lider"><i class="fas fa-chart-line"></i> GRUP 1.</div>`;
-                        }
+                        rankBadge = isGroupComplete ? `<div class="absolute -top-2 -right-2 bg-yellow-400 text-yellow-900 text-[8px] font-black px-1.5 py-0.5 rounded-md flex items-center gap-1 shadow-md border border-yellow-200 z-10" title="Grup Şampiyonu"><i class="fas fa-trophy"></i> 1. TAKIM</div>` : `<div class="absolute -top-2 -right-2 bg-[#004684] text-white text-[8px] font-black px-1.5 py-0.5 rounded-md flex items-center gap-1 shadow-md border border-[#003366] z-10" title="Anlık Lider"><i class="fas fa-chart-line"></i> GRUP 1.</div>`;
                     } else if (ourTeamIndex === 1) {
-                        if (isGroupComplete) {
-                            rankBadge = `<div class="absolute -top-2 -right-2 bg-slate-200 text-slate-700 text-[8px] font-black px-1.5 py-0.5 rounded-md flex items-center gap-1 shadow-md border border-slate-300 z-10" title="Grup İkincisi"><i class="fas fa-trophy text-slate-500"></i> 2. TAKIM</div>`;
-                        } else {
-                            rankBadge = `<div class="absolute -top-2 -right-2 bg-[#ffef03] text-[#004684] text-[8px] font-black px-1.5 py-0.5 rounded-md flex items-center gap-1 shadow-md border border-[#e6d800] z-10" title="Anlık İkinci"><i class="fas fa-chart-line"></i> GRUP 2.</div>`;
-                        }
+                        rankBadge = isGroupComplete ? `<div class="absolute -top-2 -right-2 bg-slate-200 text-slate-700 text-[8px] font-black px-1.5 py-0.5 rounded-md flex items-center gap-1 shadow-md border border-slate-300 z-10" title="Grup İkincisi"><i class="fas fa-trophy text-slate-500"></i> 2. TAKIM</div>` : `<div class="absolute -top-2 -right-2 bg-[#ffef03] text-[#004684] text-[8px] font-black px-1.5 py-0.5 rounded-md flex items-center gap-1 shadow-md border border-[#e6d800] z-10" title="Anlık İkinci"><i class="fas fa-chart-line"></i> GRUP 2.</div>`;
                     } else if (ourTeamIndex > 1) {
-                        if (isGroupComplete) {
-                            rankBadge = `<div class="absolute -top-2 -right-2 bg-slate-200 text-slate-600 text-[8px] font-black px-1.5 py-0.5 rounded-md flex items-center gap-1 shadow-sm border border-slate-300 z-10"><i class="fas fa-check"></i> ${ourTeamIndex + 1}. TAKIM</div>`;
-                        } else {
-                            rankBadge = `<div class="absolute -top-2 -right-2 bg-slate-100 text-slate-500 text-[8px] font-black px-1.5 py-0.5 rounded-md flex items-center gap-1 shadow-sm border border-slate-200 z-10"><i class="fas fa-list-ol"></i> GRUP ${ourTeamIndex + 1}.</div>`;
-                        }
+                        rankBadge = isGroupComplete ? `<div class="absolute -top-2 -right-2 bg-slate-200 text-slate-600 text-[8px] font-black px-1.5 py-0.5 rounded-md flex items-center gap-1 shadow-sm border border-slate-300 z-10"><i class="fas fa-check"></i> ${ourTeamIndex + 1}. TAKIM</div>` : `<div class="absolute -top-2 -right-2 bg-slate-100 text-slate-500 text-[8px] font-black px-1.5 py-0.5 rounded-md flex items-center gap-1 shadow-sm border border-slate-200 z-10"><i class="fas fa-list-ol"></i> GRUP ${ourTeamIndex + 1}.</div>`;
                     }
                 } else {
-                    // Skor girilmemişse YENİ GRUP rozeti
                     rankBadge = `<div class="absolute -top-2 -right-2 bg-emerald-100 text-emerald-600 text-[8px] font-black px-1.5 py-0.5 rounded-md flex items-center gap-1 shadow-sm border border-emerald-200 z-10" title="Yeni Grup"><i class="fas fa-star text-emerald-500"></i> YENİ GRUP</div>`;
                 }
             } else {
-                // Eğer grupta eşleşen hiç maç verisi yoksa
                 rankBadge = `<div class="absolute -top-2 -right-2 bg-emerald-100 text-emerald-600 text-[8px] font-black px-1.5 py-0.5 rounded-md flex items-center gap-1 shadow-sm border border-emerald-200 z-10" title="Yeni Grup"><i class="fas fa-star text-emerald-500"></i> YENİ GRUP</div>`;
             }
 
-            const safeCat = cat.replace(/'/g, "\\'");
-            
-            // Kartların Renk/Görünüm Tasarımı (Biten Gruplar İçin Ekstra Renk)
             let cardStyle = 'bg-white border-slate-200 hover:border-brand/40 hover:bg-brand/5 shadow-sm';
             let textStyle = 'text-slate-700';
             let iconStyle = 'bg-white border border-slate-100 group-hover:border-transparent';
 
             if (isActive) {
-                cardStyle = 'bg-brand border-brand shadow-md';
-                textStyle = 'text-[#004684]';
-                iconStyle = 'bg-white/30 border-transparent';
+                cardStyle = 'bg-brand border-brand shadow-md'; textStyle = 'text-[#004684]'; iconStyle = 'bg-white/30 border-transparent';
             } else if (isGroupComplete) {
-                // Biten grupları belirginleştiren gri arka plan rengi
-                cardStyle = 'bg-slate-100 border-slate-300 shadow-none hover:bg-slate-200/60 opacity-90';
-                textStyle = 'text-slate-500';
-                iconStyle = 'bg-white/60 border-slate-200';
+                cardStyle = 'bg-slate-100 border-slate-300 shadow-none hover:bg-slate-200/60 opacity-90'; textStyle = 'text-slate-500'; iconStyle = 'bg-white/60 border-slate-200';
             }
 
-            html += `
-            <div onclick="selectCategory('${safeCat}')" class="relative group flex items-center gap-2.5 p-2 rounded-2xl border transition-all duration-200 cursor-pointer min-w-0 w-full ${cardStyle}">
+            html += `<div onclick="selectCategory('${cat.replace(/'/g, "\\'")}')" class="relative group flex items-center gap-2.5 p-2 rounded-2xl border transition-all duration-200 cursor-pointer min-w-0 w-full ${cardStyle}">
                 ${rankBadge}
-                <div class="w-10 h-10 shrink-0 rounded-xl flex items-center justify-center p-1.5 overflow-hidden transition-colors ${iconStyle}">
-                    ${clubLogoHtml}
-                </div>
+                <div class="w-10 h-10 shrink-0 rounded-xl flex items-center justify-center p-1.5 overflow-hidden transition-colors ${iconStyle}">${clubLogoHtml}</div>
                 <div class="flex-1 min-w-0 pr-2">
                     <div class="text-[10px] sm:text-[11px] font-black uppercase block w-full overflow-hidden text-ellipsis whitespace-nowrap ${textStyle}" title="${cat}">${cat}</div>
-                    <div class="flex items-center gap-1 text-[9px] font-bold mt-0.5 ${isActive ? 'text-[#004684]/70' : 'text-slate-400'}">
-                        <i class="fas fa-users text-[8px]"></i> ${playerCount} Sporcu
-                    </div>
+                    <div class="flex items-center gap-1 text-[9px] font-bold mt-0.5 ${isActive ? 'text-[#004684]/70' : 'text-slate-400'}"><i class="fas fa-users text-[8px]"></i> ${playerCount} Sporcu</div>
                 </div>
             </div>`;
         });
@@ -1218,291 +885,126 @@
         c.innerHTML = html;
     }
 
-    function selectCategory(cat) {
-        state.selectedCategory = cat;
-        renderCategoryTabs();
-        renderMainContent();
-    }
+    function selectCategory(cat) { state.selectedCategory = cat; renderCategoryTabs(); renderMainContent(); }
 
     function renderMainContent() {
-        let pool = [];
-        
-        if (state.selectedCategory === 'all') {
-            pool = state.clubMatches;
-        } else {
-            // Seçili grupta bizim maçlarımız + excelden eklediğimiz rakiplerin kendi aralarındaki maçları
-            const validTeams = getValidTeamsForCategory(state.selectedCategory);
-            pool = state.rawMatches.filter(m => 
-                getGroupCode(m) === state.selectedCategory && 
-                validTeams.has(cleanTeamName(m.t1)) && 
-                validTeams.has(cleanTeamName(m.t2))
-            );
-        }
-        
-        document.getElementById('match-list-title').innerText = state.selectedCategory === 'all' ? 'Tüm Sezon Maçları' : `${state.selectedCategory} Maçları`;
-        document.getElementById('match-count-badge').innerText = `${pool.length} Maç`;
+        let pool = state.selectedCategory === 'all' ? state.clubMatches : state.rawMatches.filter(m => getGroupCode(m) === state.selectedCategory && getValidTeamsForCategory(state.selectedCategory).has(cleanTeamName(m.t1)) && getValidTeamsForCategory(state.selectedCategory).has(cleanTeamName(m.t2)));
+        const listTitle = document.getElementById('match-list-title');
+        const countBadge = document.getElementById('match-count-badge');
+        if (listTitle) listTitle.innerText = state.selectedCategory === 'all' ? 'Tüm Sezon Maçları' : `${state.selectedCategory} Maçları`;
+        if (countBadge) countBadge.innerText = `${pool.length} Maç`;
 
-        // Roster render
         const rosterSec = document.getElementById('roster-section');
         const standingsSec = document.getElementById('standings-section');
+        const btnCatPdf = document.getElementById('btn-download-cat-pdf');
 
         if (state.selectedCategory !== 'all') {
-            // Find roster using fuzzy matching with category name
-            let targetRoster = null;
-            let bestMatchLength = 0;
+            if (btnCatPdf) btnCatPdf.classList.remove('hidden');
+            let targetRoster = null, bestMatchLength = 0;
             for(let key in state.rosters) {
-                const normCat = superNormalize(state.selectedCategory);
-                const normKey = superNormalize(key);
-                if(normCat.includes(normKey) || normKey.includes(normCat)) {
-                    if (key.length > bestMatchLength) {
-                        bestMatchLength = key.length;
-                        targetRoster = state.rosters[key]; 
-                    }
+                if(superNormalize(state.selectedCategory).includes(superNormalize(key)) || superNormalize(key).includes(superNormalize(state.selectedCategory))) {
+                    if (key.length > bestMatchLength) { bestMatchLength = key.length; targetRoster = state.rosters[key]; }
                 }
             }
+            if (!targetRoster) targetRoster = { coach: 'ANTRENÖR YOK', players: [] };
 
-            // Veri olmasa bile tasarımı korumak için boş bir şablon oluştur
-            if (!targetRoster) {
-                targetRoster = { coach: 'ANTRENÖR YOK', players: [] };
-            }
-
-            rosterSec.classList.remove('hidden');
-            document.getElementById('roster-category-name').innerText = state.selectedCategory;
-            document.getElementById('roster-coach').innerText = targetRoster.coach || 'ANTRENÖR YOK';
+            if(rosterSec) rosterSec.classList.remove('hidden');
+            const rosterCatName = document.getElementById('roster-category-name');
+            const rosterCoachName = document.getElementById('roster-coach');
+            if(rosterCatName) rosterCatName.innerText = state.selectedCategory;
+            if(rosterCoachName) rosterCoachName.innerText = targetRoster.coach || 'ANTRENÖR YOK';
             
-            // Tüm gruplarda eksiksiz bir tasarım (grid) görünmesi için kadroyu en az 10 kişiye (görseldeki gibi 2 tam satır) tamamla
             let playersToRender = targetRoster.players ? [...targetRoster.players] : [];
-            while (playersToRender.length < 10) {
-                playersToRender.push({ no: '-', name: 'SPORCU', pos: 'MEVKİ', img: '', isEmpty: true });
-            }
+            while (playersToRender.length < 10) playersToRender.push({ no: '-', name: 'SPORCU', pos: 'MEVKİ', img: '', isEmpty: true, attendanceCount: 0 });
 
-            document.getElementById('roster-grid').innerHTML = playersToRender.map(p => `
-                <div class="bg-white/5 border border-white/10 rounded-xl p-3 pt-4 flex flex-col items-center justify-center text-center relative hover:bg-white/10 transition-colors ${p.isEmpty ? 'opacity-50' : ''}">
-                    <div class="absolute top-2 left-2 bg-brand text-[#004684] text-[9px] sm:text-[10px] font-black px-1.5 py-0.5 rounded leading-none">${p.no}</div>
-                    <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-full border-[1px] border-white/20 mb-2 sm:mb-3 flex items-center justify-center bg-transparent overflow-hidden relative">
-                        ${p.img && p.img.trim() !== '' && !p.isEmpty 
-                            ? `
-                            <svg class="hidden absolute w-6 h-6 sm:w-7 sm:h-7 text-white/30 mt-2" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
-                            <img src="${p.img.trim()}" class="w-full h-full object-cover relative z-10" onerror="this.style.display='none'; this.previousElementSibling.classList.remove('hidden');">
-                            ` 
-                            : `<svg class="absolute w-6 h-6 sm:w-7 sm:h-7 text-white/30 mt-2" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>`
-                        }
+            const rosterGrid = document.getElementById('roster-grid');
+            if(rosterGrid) rosterGrid.innerHTML = playersToRender.map(p => {
+                const isAbsent = !p.isEmpty && p.status && p.status.toLowerCase() !== 'var' && p.status.toLowerCase() !== 'geldi';
+                
+                const attHtml = `<div class="mt-1 text-[8.5px] font-bold text-white/70 w-full text-center bg-black/20 py-1 rounded shadow-inner" title="Toplam Katıldığı Maç Sayısı"><i class="fas fa-check-square text-emerald-400"></i> ${p.attendanceCount} Maça Geldi</div>`;
+
+                return `
+                <div class="bg-white/5 border border-white/10 rounded-xl p-3 pt-4 flex flex-col items-center justify-center text-center relative hover:bg-white/10 transition-colors ${p.isEmpty ? 'opacity-50' : ''} ${isAbsent ? 'opacity-60 grayscale-[30%]' : ''}">
+                    ${isAbsent ? `<div class="absolute inset-0 bg-slate-900/50 z-20 rounded-xl flex items-center justify-center backdrop-blur-[1px]"><span class="bg-rose-500 text-white text-[9px] font-black px-2 py-1 rounded uppercase tracking-widest transform -rotate-12 border border-rose-400 shadow-xl line-clamp-1 max-w-[90%]">${p.status}</span></div>` : ''}
+                    <div class="absolute top-2 left-2 w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center z-10" title="Forma Numarası">
+                        <i class="fas fa-tshirt text-brand text-[20px] sm:text-[24px] absolute drop-shadow-md"></i>
+                        <span class="relative z-10 text-[#004684] font-black text-[9px] sm:text-[10px] mt-1">${p.no}</span>
                     </div>
-                    <div class="text-[10px] sm:text-[11px] font-black text-white uppercase leading-tight line-clamp-1 w-full mb-1.5 tracking-wide">${p.name}</div>
-                    <div class="text-[8px] sm:text-[9px] font-bold text-white/60 bg-white/10 border border-white/5 px-2 py-0.5 rounded uppercase tracking-widest">${p.pos}</div>
-                </div>
-            `).join('');
+                    <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-full border-[1px] border-white/20 mb-2 sm:mb-3 flex items-center justify-center bg-transparent overflow-hidden relative z-10">
+                        ${p.img && p.img.trim() !== '' && !p.isEmpty 
+                            ? `<svg class="hidden absolute w-6 h-6 sm:w-7 sm:h-7 text-white/30 mt-2" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg><img src="${p.img.trim()}" class="w-full h-full object-cover relative z-10" onerror="this.style.display='none'; if(this.previousElementSibling) this.previousElementSibling.classList.remove('hidden');">` 
+                            : `<svg class="absolute w-6 h-6 sm:w-7 sm:h-7 text-white/30 mt-2" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>`}
+                    </div>
+                    <div class="text-[10px] sm:text-[11px] font-black text-white uppercase leading-tight line-clamp-1 w-full mb-1.5 tracking-wide relative z-10">${p.name}</div>
+                    <div class="text-[8px] sm:text-[9px] font-bold text-white/60 bg-white/10 border border-white/5 px-2 py-0.5 rounded uppercase tracking-widest relative z-10 mb-1">${p.pos}</div>
+                    ${!p.isEmpty ? attHtml : ''}
+                </div>`;
+            }).join('');
 
-            // Puan Durumu (Standings) Render
             const standings = calculateStandings(state.selectedCategory);
             const isTwoSetFormat = isCategoryTwoSet(state.selectedCategory);
             const isMinikGrp = isCategoryMinik(state.selectedCategory);
             
-            // Grubun gerçekten bitip bitmediğini anlamak için TVF fikstüründeki o gruba ait TÜM maçları kontrol et
-            const allGroupMatches = state.rawMatches.filter(m => getGroupCode(m) === state.selectedCategory);
-
-            // Gruptaki takımları hesapla ve çift devre maç sayısını tespit et
-            const allGroupTeams = new Set();
-            let isDoubleRoundRobin = false;
-            const matchups = new Set();
-            
-            allGroupMatches.forEach(m => {
-                if(m.t1) allGroupTeams.add(cleanTeamName(m.t1));
-                if(m.t2) allGroupTeams.add(cleanTeamName(m.t2));
-                
-                const pair = [cleanTeamName(m.t1), cleanTeamName(m.t2)].sort().join('|');
-                if (matchups.has(pair)) isDoubleRoundRobin = true;
-                matchups.add(pair);
-            });
-            
-            // ANA KOD GÜNCELLEMESİ: Takım sayısını belirlerken Kadro Rakiplerini de dâhil et
-            const validTeamsForCat = getValidTeamsForCategory(state.selectedCategory);
-            const realTeamsCount = Math.max(allGroupTeams.size, validTeamsForCat.size);
-            const isLeague1 = superNormalize(state.selectedCategory).includes('1l'); // 1. Ligler 2 devrelidir
-            const multiplier = (isDoubleRoundRobin || isLeague1) ? 2 : 1;
-            
-            const expectedTotalMatches = multiplier * (realTeamsCount * (realTeamsCount - 1)) / 2;
-
-            // Grubun tamamlanıp tamamlanmadığını kontrol et (fikstür eksikse veya oynanmayan varsa bitmemiştir)
-            const isGroupComplete = state.selectedCategory !== 'all' && 
-                                    allGroupMatches.length > 0 && 
-                                    allGroupMatches.length >= expectedTotalMatches && 
-                                    allGroupMatches.every(m => isMatchPlayed(m));
-                                    
-            const hasPlayedMatch = state.selectedCategory !== 'all' && pool.length > 0 && pool.some(m => isMatchPlayed(m));
-
             if (standings.length > 0) {
-                standingsSec.classList.remove('hidden');
-                
-                let extraColsHeader = !isTwoSetFormat 
-                    ? `<th class="py-3 px-2 text-center text-emerald-600/80 text-[10px]" title="3-0 Galibiyet">3-0</th>
-                       <th class="py-3 px-2 text-center text-emerald-600/80 text-[10px]" title="3-1 Galibiyet">3-1</th>
-                       <th class="py-3 px-2 text-center text-emerald-600/80 text-[10px]" title="3-2 Galibiyet">3-2</th>
-                       <th class="py-3 px-2 text-center text-rose-600/80 text-[10px]" title="2-3 Mağlubiyet">2-3</th>
-                       <th class="py-3 px-2 text-center text-rose-600/80 text-[10px]" title="1-3 Mağlubiyet">1-3</th>
-                       <th class="py-3 px-2 text-center text-rose-600/80 text-[10px]" title="0-3 Mağlubiyet">0-3</th>`
-                    : `<th class="py-3 px-2 text-center text-emerald-600/80 text-[10px]" title="2-0 Galibiyet">2-0</th>
-                       <th class="py-3 px-2 text-center text-emerald-600/80 text-[10px]" title="2-1 Galibiyet">2-1</th>
-                       <th class="py-3 px-2 text-center text-rose-600/80 text-[10px]" title="1-2 Mağlubiyet">1-2</th>
-                       ${isMinikGrp ? '' : `<th class="py-3 px-2 text-center text-rose-600/80 text-[10px]" title="0-2 Mağlubiyet">0-2</th>`}`;
+                if(standingsSec) standingsSec.classList.remove('hidden');
+                let extraColsHeader = !isTwoSetFormat ? `<th class="py-3 px-2 text-center text-emerald-600/80 text-[10px]" title="3-0 Galibiyet">3-0</th><th class="py-3 px-2 text-center text-emerald-600/80 text-[10px]" title="3-1 Galibiyet">3-1</th><th class="py-3 px-2 text-center text-emerald-600/80 text-[10px]" title="3-2 Galibiyet">3-2</th><th class="py-3 px-2 text-center text-rose-600/80 text-[10px]" title="2-3 Mağlubiyet">2-3</th><th class="py-3 px-2 text-center text-rose-600/80 text-[10px]" title="1-3 Mağlubiyet">1-3</th><th class="py-3 px-2 text-center text-rose-600/80 text-[10px]" title="0-3 Mağlubiyet">0-3</th>` : `<th class="py-3 px-2 text-center text-emerald-600/80 text-[10px]" title="2-0 Galibiyet">2-0</th><th class="py-3 px-2 text-center text-emerald-600/80 text-[10px]" title="2-1 Galibiyet">2-1</th><th class="py-3 px-2 text-center text-rose-600/80 text-[10px]" title="1-2 Mağlubiyet">1-2</th>${isMinikGrp ? '' : `<th class="py-3 px-2 text-center text-rose-600/80 text-[10px]" title="0-2 Mağlubiyet">0-2</th>`}`;
 
-                let tableHtml = `
-                <div class="bg-white rounded-3xl p-4 sm:p-6 shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden">
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-base font-black uppercase flex items-center gap-2 text-[#004684]">
-                            <i class="fas fa-list-ol text-brand"></i> Puan Durumu
-                        </h3>
-                    </div>
-                    <div class="overflow-x-auto custom-scrollbar pb-2">
-                        <table class="w-full text-left border-collapse min-w-[750px]">
-                            <thead>
-                                <tr class="text-[10px] sm:text-xs font-black text-slate-400 uppercase tracking-wider border-b-2 border-slate-100">
-                                    <th class="py-3 px-2 w-8 text-center">#</th>
-                                    <th class="py-3 px-2">Takım</th>
-                                    <th class="py-3 px-2 text-center" title="Oynanan Maç">O</th>
-                                    <th class="py-3 px-2 text-center text-emerald-500" title="Galibiyet">G</th>
-                                    <th class="py-3 px-2 text-center text-rose-500" title="Mağlubiyet">M</th>
-                                    <th class="py-3 px-2 text-center" title="Aldığı Set">A</th>
-                                    <th class="py-3 px-2 text-center" title="Verdiği Set">V</th>
-                                    <th class="py-3 px-2 text-center text-[#004684] text-sm" title="Puan">P</th>
-                                    <th class="py-3 px-2 text-center" title="Set Averajı">SAV</th>
-                                    <th class="py-3 px-2 text-center" title="Aldığı Sayı Puanı">ASP</th>
-                                    <th class="py-3 px-2 text-center" title="Verdiği Sayı Puanı">VSP</th>
-                                    <th class="py-3 px-2 text-center text-[#004684]" title="Sayı Puanı Averajı">SPAV</th>
-                                    ${extraColsHeader}
-                                </tr>
-                            </thead>
-                            <tbody>
-                `;
+                let tableHtml = `<div class="bg-white rounded-3xl p-4 sm:p-6 shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden"><div class="flex items-center justify-between mb-4"><h3 class="text-base font-black uppercase flex items-center gap-2 text-[#004684]"><i class="fas fa-list-ol text-brand"></i> Puan Durumu</h3></div><div class="overflow-x-auto custom-scrollbar pb-2"><table class="w-full text-left border-collapse min-w-[750px]"><thead><tr class="text-[10px] sm:text-xs font-black text-slate-400 uppercase tracking-wider border-b-2 border-slate-100"><th class="py-3 px-2 w-8 text-center">#</th><th class="py-3 px-2">Takım</th><th class="py-3 px-2 text-center" title="Oynanan Maç">O</th><th class="py-3 px-2 text-center text-emerald-500" title="Galibiyet">G</th><th class="py-3 px-2 text-center text-rose-500" title="Mağlubiyet">M</th><th class="py-3 px-2 text-center" title="Aldığı Set">A</th><th class="py-3 px-2 text-center" title="Verdiği Set">V</th><th class="py-3 px-2 text-center text-[#004684] text-sm" title="Puan">P</th><th class="py-3 px-2 text-center" title="Set Averajı">SAV</th><th class="py-3 px-2 text-center" title="Aldığı Sayı Puanı">ASP</th><th class="py-3 px-2 text-center" title="Verdiği Sayı Puanı">VSP</th><th class="py-3 px-2 text-center text-[#004684]" title="Sayı Puanı Averajı">SPAV</th>${extraColsHeader}</tr></thead><tbody>`;
 
                 standings.forEach((t, i) => {
                     const isUs = isOurClub(t.name);
-                    
-                    // Tamamlanan veya Devam Eden gruplar için Etiketler (1. ve 2. Sıra)
-                    let rankBadge = '';
-                    if (hasPlayedMatch) {
-                        if (i === 0) {
-                            if (isGroupComplete) {
-                                rankBadge = `<div class="ml-2 bg-yellow-400 text-yellow-900 text-[8px] font-black px-1.5 py-0.5 rounded flex items-center gap-1 shadow-sm shrink-0 whitespace-nowrap" title="Şampiyon"><i class="fas fa-trophy"></i> 1. TAKIM</div>`;
-                            } else {
-                                rankBadge = `<div class="ml-2 bg-[#004684] text-white text-[8px] font-black px-1.5 py-0.5 rounded flex items-center gap-1 shadow-sm shrink-0 whitespace-nowrap" title="Anlık Lider"><i class="fas fa-chart-line"></i> GRUP 1.</div>`;
-                            }
-                        } else if (i === 1) {
-                            if (isGroupComplete) {
-                                rankBadge = `<div class="ml-2 bg-slate-200 text-slate-700 text-[8px] font-black px-1.5 py-0.5 rounded flex items-center gap-1 shadow-sm shrink-0 whitespace-nowrap" title="İkinci"><i class="fas fa-trophy text-slate-500"></i> 2. TAKIM</div>`;
-                            } else {
-                                rankBadge = `<div class="ml-2 bg-[#ffef03] text-[#004684] text-[8px] font-black px-1.5 py-0.5 rounded flex items-center gap-1 shadow-sm shrink-0 whitespace-nowrap" title="Anlık İkinci"><i class="fas fa-chart-line"></i> GRUP 2.</div>`;
-                            }
-                        }
-                    }
-
-                    let extraColsBody = !isTwoSetFormat
-                        ? `<td class="py-2.5 px-2 text-center font-bold text-emerald-600 text-[10px] bg-emerald-50/30 border-l border-white">${t.w30}</td>
-                           <td class="py-2.5 px-2 text-center font-bold text-emerald-600 text-[10px] bg-emerald-50/30 border-l border-white">${t.w31}</td>
-                           <td class="py-2.5 px-2 text-center font-bold text-emerald-600 text-[10px] bg-emerald-50/30 border-l border-white">${t.w32}</td>
-                           <td class="py-2.5 px-2 text-center font-bold text-rose-600 text-[10px] bg-rose-50/30 border-l border-white">${t.l23}</td>
-                           <td class="py-2.5 px-2 text-center font-bold text-rose-600 text-[10px] bg-rose-50/30 border-l border-white">${t.l13}</td>
-                           <td class="py-2.5 px-2 text-center font-bold text-rose-600 text-[10px] bg-rose-50/30 border-l border-white">${t.l03}</td>`
-                        : `<td class="py-2.5 px-2 text-center font-bold text-emerald-600 text-[10px] bg-emerald-50/30 border-l border-white">${t.w20}</td>
-                           <td class="py-2.5 px-2 text-center font-bold text-emerald-600 text-[10px] bg-emerald-50/30 border-l border-white">${t.w21}</td>
-                           <td class="py-2.5 px-2 text-center font-bold text-rose-600 text-[10px] bg-rose-50/30 border-l border-white">${t.l12}</td>
-                           ${isMinikGrp ? '' : `<td class="py-2.5 px-2 text-center font-bold text-rose-600 text-[10px] bg-rose-50/30 border-l border-white">${t.l02}</td>`}`;
-
-                    tableHtml += `
-                    <tr class="border-b border-slate-50 last:border-none transition-colors ${isUs ? 'bg-brand/10 border-l-4 border-l-brand' : 'hover:bg-slate-50 border-l-4 border-l-transparent'}">
-                        <td class="py-2.5 px-2 text-center font-bold text-slate-500 text-xs">${i+1}</td>
-                        <td class="py-2.5 px-2 flex items-center gap-2 min-w-[200px]">
-                            ${getLogoHtml(t.name, "w-6 h-6 sm:w-8 sm:h-8")}
-                            <div class="flex items-center">
-                                <span class="font-black text-[10px] sm:text-xs uppercase ${isUs ? 'text-[#004684]' : 'text-slate-800'} line-clamp-1">${cleanTeamName(t.name)}</span>
-                                ${rankBadge}
-                            </div>
-                        </td>
-                        <td class="py-2.5 px-2 text-center font-bold text-slate-600 text-xs">${t.O}</td>
-                        <td class="py-2.5 px-2 text-center font-black text-emerald-600 text-xs">${t.G}</td>
-                        <td class="py-2.5 px-2 text-center font-black text-rose-600 text-xs">${t.M}</td>
-                        <td class="py-2.5 px-2 text-center font-bold text-slate-600 text-xs">${t.A}</td>
-                        <td class="py-2.5 px-2 text-center font-bold text-slate-600 text-xs">${t.V}</td>
-                        <td class="py-2.5 px-2 text-center font-black text-[#004684] text-sm bg-slate-50/50">${t.P}</td>
-                        <td class="py-2.5 px-2 text-center font-bold text-[#004684]/80 text-[10px]">${formatAveraj(t.A, t.V, true)}</td>
-                        <td class="py-2.5 px-2 text-center font-bold text-slate-600 text-[10px]">${t.ASP}</td>
-                        <td class="py-2.5 px-2 text-center font-bold text-slate-600 text-[10px]">${t.VSP}</td>
-                        <td class="py-2.5 px-2 text-center font-black text-brand text-[10px] bg-slate-50/50">${formatAveraj(t.ASP, t.VSP, false)}</td>
-                        ${extraColsBody}
-                    </tr>
-                    `;
+                    let rankBadge = ''; 
+                    let extraColsBody = !isTwoSetFormat ? `<td class="py-2.5 px-2 text-center font-bold text-emerald-600 text-[10px] bg-emerald-50/30 border-l border-white">${t.w30}</td><td class="py-2.5 px-2 text-center font-bold text-emerald-600 text-[10px] bg-emerald-50/30 border-l border-white">${t.w31}</td><td class="py-2.5 px-2 text-center font-bold text-emerald-600 text-[10px] bg-emerald-50/30 border-l border-white">${t.w32}</td><td class="py-2.5 px-2 text-center font-bold text-rose-600 text-[10px] bg-rose-50/30 border-l border-white">${t.l23}</td><td class="py-2.5 px-2 text-center font-bold text-rose-600 text-[10px] bg-rose-50/30 border-l border-white">${t.l13}</td><td class="py-2.5 px-2 text-center font-bold text-rose-600 text-[10px] bg-rose-50/30 border-l border-white">${t.l03}</td>` : `<td class="py-2.5 px-2 text-center font-bold text-emerald-600 text-[10px] bg-emerald-50/30 border-l border-white">${t.w20}</td><td class="py-2.5 px-2 text-center font-bold text-emerald-600 text-[10px] bg-emerald-50/30 border-l border-white">${t.w21}</td><td class="py-2.5 px-2 text-center font-bold text-rose-600 text-[10px] bg-rose-50/30 border-l border-white">${t.l12}</td>${isMinikGrp ? '' : `<td class="py-2.5 px-2 text-center font-bold text-rose-600 text-[10px] bg-rose-50/30 border-l border-white">${t.l02}</td>`}`;
+                    tableHtml += `<tr class="border-b border-slate-50 last:border-none transition-colors ${isUs ? 'bg-brand/10 border-l-4 border-l-brand' : 'hover:bg-slate-50 border-l-4 border-l-transparent'}"><td class="py-2.5 px-2 text-center font-bold text-slate-500 text-xs">${i+1}</td><td class="py-2.5 px-2 flex items-center gap-2 min-w-[200px]">${getLogoHtml(t.name, "w-6 h-6 sm:w-8 sm:h-8")}<div class="flex items-center"><span class="font-black text-[10px] sm:text-xs uppercase ${isUs ? 'text-[#004684]' : 'text-slate-800'} line-clamp-1">${cleanTeamName(t.name)}</span></div></td><td class="py-2.5 px-2 text-center font-bold text-slate-600 text-xs">${t.O}</td><td class="py-2.5 px-2 text-center font-black text-emerald-600 text-xs">${t.G}</td><td class="py-2.5 px-2 text-center font-black text-rose-600 text-xs">${t.M}</td><td class="py-2.5 px-2 text-center font-bold text-slate-600 text-xs">${t.A}</td><td class="py-2.5 px-2 text-center font-bold text-slate-600 text-xs">${t.V}</td><td class="py-2.5 px-2 text-center font-black text-[#004684] text-sm bg-slate-50/50">${t.P}</td><td class="py-2.5 px-2 text-center font-bold text-[#004684]/80 text-[10px]">${formatAveraj(t.A, t.V, true)}</td><td class="py-2.5 px-2 text-center font-bold text-slate-600 text-[10px]">${t.ASP}</td><td class="py-2.5 px-2 text-center font-bold text-slate-600 text-[10px]">${t.VSP}</td><td class="py-2.5 px-2 text-center font-black text-brand text-[10px] bg-slate-50/50">${formatAveraj(t.ASP, t.VSP, false)}</td>${extraColsBody}</tr>`;
                 });
-
                 tableHtml += `</tbody></table></div></div>`;
-                standingsSec.innerHTML = tableHtml;
-            } else {
+                if(standingsSec) standingsSec.innerHTML = tableHtml;
+            } else if (standingsSec) {
                 standingsSec.classList.add('hidden');
             }
-
-        } else {
-            rosterSec.classList.add('hidden');
-            standingsSec.classList.add('hidden');
+        } else { 
+            if(rosterSec) rosterSec.classList.add('hidden'); 
+            if(standingsSec) standingsSec.classList.add('hidden'); 
+            if (btnCatPdf) btnCatPdf.classList.add('hidden');
         }
 
-        // Matches render
         const mC = document.getElementById('match-container');
         const eS = document.getElementById('empty-state');
         
-        // Voleybol arayüzüne geri dönüldüğünde ikon ve yazıyı eski haline getir
-        eS.querySelector('i').className = 'fas fa-volleyball-ball text-3xl text-slate-300';
-        eS.querySelector('p').innerText = 'Bu kategori için henüz maç bulunamadı.';
-
         if (pool.length === 0) {
-            mC.innerHTML = '';
-            eS.classList.remove('hidden'); eS.classList.add('flex');
+            if(mC) mC.innerHTML = ''; 
+            if(eS) { eS.classList.remove('hidden'); eS.classList.add('flex'); }
         } else {
-            eS.classList.add('hidden'); eS.classList.remove('flex');
+            if(eS) { eS.classList.add('hidden'); eS.classList.remove('flex'); }
             
-            // Maçları Gelecek ve Oynanan olarak ikiye ayır
-            const upcomingMatches = pool.filter(m => !isMatchPlayed(m));
-            const playedMatches = pool.filter(m => isMatchPlayed(m));
-
-            // Yaklaşan maçları tarih sırasına göre (yakından uzağa) sırala
-            upcomingMatches.sort((a,b) => {
-                const dA = a.date.split('.').reverse().join('');
-                const dB = b.date.split('.').reverse().join('');
-                return dA.localeCompare(dB); 
+            const upcomingMatches = pool.filter(m => !isMatchPlayed(m)).sort((a,b) => {
+                const isUsA = isOurClub(a.t1) || isOurClub(a.t2); const isUsB = isOurClub(b.t1) || isOurClub(b.t2);
+                if (isUsA && !isUsB) return -1; if (!isUsA && isUsB) return 1;
+                return a.date.split('.').reverse().join('').localeCompare(b.date.split('.').reverse().join(''));
             });
 
-            // Oynanan maçları yeniden eskiye (en son oynanan en üstte) sırala
-            playedMatches.sort((a,b) => {
-                const dA = a.date.split('.').reverse().join('');
-                const dB = b.date.split('.').reverse().join('');
-                return dB.localeCompare(dA);
+            const playedMatches = pool.filter(m => isMatchPlayed(m)).sort((a,b) => {
+                const isUsA = isOurClub(a.t1) || isOurClub(a.t2); const isUsB = isOurClub(b.t1) || isOurClub(b.t2);
+                if (isUsA && !isUsB) return -1; if (!isUsA && isUsB) return 1;
+                return b.date.split('.').reverse().join('').localeCompare(a.date.split('.').reverse().join(''));
             });
 
-            // Tekil bir maç kartı üreten yardımcı fonksiyon
             const generateCardHtml = (m) => {
-                const played = isMatchPlayed(m);
-                const isWin = didClubWin(m);
+                const played = isMatchPlayed(m); const isWin = didClubWin(m);
                 const safeM = encodeURIComponent(JSON.stringify(m)).replace(/'/g, "%27");
                 
                 let resultBadge = '';
                 if (played) {
-                    if (isWin === true) {
-                        resultBadge = `<div class="bg-emerald-500 text-white text-[9px] font-black px-4 py-1.5 rounded-tl-xl rounded-br-xl uppercase tracking-wider shadow-sm flex items-center"><i class="fas fa-check-circle mr-1"></i> Galibiyet</div>`;
-                    } else if (isWin === false) {
-                        resultBadge = `<div class="bg-rose-500 text-white text-[9px] font-black px-4 py-1.5 rounded-tl-xl rounded-br-xl uppercase tracking-wider shadow-sm flex items-center"><i class="fas fa-times-circle mr-1"></i> Mağlubiyet</div>`;
-                    } else {
-                        // Maç iki rakip takım arasındaysa, tarafsız sonuç etiketi:
-                        resultBadge = `<div class="bg-slate-500 text-white text-[9px] font-black px-4 py-1.5 rounded-tl-xl rounded-br-xl uppercase tracking-wider shadow-sm flex items-center"><i class="fas fa-info-circle mr-1"></i> Maç Sonucu</div>`;
-                    }
+                    if (isWin === true) resultBadge = `<div class="bg-emerald-500 text-white text-[9px] font-black px-4 py-1.5 rounded-tl-xl rounded-br-xl md:rounded-xl uppercase tracking-wider shadow-sm flex items-center justify-center w-full"><i class="fas fa-check-circle mr-1"></i> Galibiyet</div>`;
+                    else if (isWin === false) resultBadge = `<div class="bg-rose-500 text-white text-[9px] font-black px-4 py-1.5 rounded-tl-xl rounded-br-xl md:rounded-xl uppercase tracking-wider shadow-sm flex items-center justify-center w-full"><i class="fas fa-times-circle mr-1"></i> Mağlubiyet</div>`;
+                    else resultBadge = `<div class="bg-slate-500 text-white text-[9px] font-black px-4 py-1.5 rounded-tl-xl rounded-br-xl md:rounded-xl uppercase tracking-wider shadow-sm flex items-center justify-center w-full"><i class="fas fa-info-circle mr-1"></i> Maç Sonucu</div>`;
                 } else {
                     const countdownStr = getCountdown(m.date, m.time);
                     if (countdownStr) {
-                        // Eğer maç günündeysek (GÜN yazmıyorsa) kırmızı ve animasyonlu uyarı ver
                         const isClose = !countdownStr.includes('GÜN') && countdownStr !== 'SKOR BEKLENİYOR';
-                        const badgeColors = isClose 
-                            ? 'bg-rose-500 text-white animate-pulse' 
-                            : (countdownStr === 'SKOR BEKLENİYOR' ? 'bg-slate-500 text-white' : 'bg-brand text-[#004684]');
+                        const badgeColors = isClose ? 'bg-rose-500 text-white animate-pulse' : (countdownStr === 'SKOR BEKLENİYOR' ? 'bg-slate-500 text-white' : 'bg-brand text-[#004684]');
                         const icon = countdownStr === 'SKOR BEKLENİYOR' ? 'fa-clock' : 'fa-hourglass-half';
-                        
-                        resultBadge = `<div class="${badgeColors} text-[9px] font-black px-4 py-1.5 rounded-tl-xl rounded-br-xl uppercase tracking-wider shadow-sm flex items-center"><i class="fas ${icon} mr-1"></i> ${countdownStr}</div>`;
+                        resultBadge = `<div class="${badgeColors} text-[9px] font-black px-4 py-1.5 rounded-tl-xl rounded-br-xl md:rounded-xl uppercase tracking-wider shadow-sm flex items-center justify-center w-full"><i class="fas ${icon} mr-1"></i> ${countdownStr}</div>`;
                     }
                 }
 
@@ -1510,100 +1012,53 @@
                 if (played && m.sets && m.sets !== '-') {
                     const sA = [...m.sets.matchAll(/\((\d+)-(\d+)\)/g)];
                     if (sA.length > 0) {
-                        setsHtml = `<div class="flex gap-2 items-center justify-center mt-1 pt-3 border-t border-slate-50 flex-wrap">
-                            ${sA.map((s, idx) => `
-                            <div class="flex flex-col items-center min-w-[36px]">
-                                <span class="text-[8px] font-black text-slate-400 tracking-widest uppercase mb-0.5">S${idx+1}</span>
-                                <span class="text-[11px] font-black bg-slate-50 border border-slate-100 px-2 py-1 rounded-md text-[#004684] w-full text-center shadow-sm">${s[1]}-${s[2]}</span>
-                            </div>
-                            `).join('')}
-                        </div>`;
-                    } else {
-                        setsHtml = `<div class="text-[11px] font-black text-[#004684] text-center mt-2 bg-slate-50 py-1.5 rounded-lg border border-slate-100 shadow-sm">${m.sets.replace(/<[^>]*>/g, '')}</div>`;
-                    }
+                        setsHtml = `<div class="flex gap-2 items-center justify-start mt-2 md:mt-3 pt-3 border-t border-slate-50 flex-wrap w-full">${sA.map((s, idx) => `<div class="flex flex-col items-center min-w-[36px]"><span class="text-[8px] font-black text-slate-400 tracking-widest uppercase mb-0.5">S${idx+1}</span><span class="text-[11px] font-black bg-slate-50 border border-slate-100 px-2 py-1 rounded-md text-[#004684] w-full text-center shadow-sm">${s[1]}-${s[2]}</span></div>`).join('')}</div>`;
+                    } else setsHtml = `<div class="text-[11px] font-black text-[#004684] text-left mt-2 bg-slate-50 py-1.5 px-3 rounded-lg border border-slate-100 shadow-sm w-full max-w-[200px] mr-auto">${m.sets.replace(/<[^>]*>/g, '')}</div>`;
                 }
 
                 return `
-                <div class="match-card p-4 rounded-3xl relative flex flex-col gap-3">
-                    
-                    <!-- ÜST BİLGİ ALANI: Grup | Tarih-Saat | Salon -->
-                    <div class="flex flex-wrap items-center gap-1.5">
-                        <div class="text-[9px] font-black uppercase bg-slate-100 text-slate-600 px-2 py-1 rounded-md shrink-0 truncate max-w-[120px] sm:max-w-[160px]" title="${getGroupCode(m)}">
-                            ${getGroupCode(m)}
+                <div class="match-card p-4 rounded-3xl relative flex flex-col md:flex-row md:items-stretch gap-4">
+                    <div class="flex flex-wrap md:flex-col items-center md:items-start justify-center md:justify-center gap-1.5 md:w-[150px] lg:w-[180px] shrink-0">
+                        <div class="text-[9px] font-black uppercase bg-slate-100 text-slate-600 px-2 py-1 rounded-md shrink-0 truncate max-w-[120px] sm:max-w-[160px] md:max-w-full w-auto" title="${getGroupCode(m)}">${getGroupCode(m)}</div>
+                        <div class="text-[9px] font-black uppercase bg-[#004684]/10 text-[#004684] px-2 py-1 rounded-md flex items-center gap-1 shrink-0"><i class="far fa-clock"></i> ${m.date} - ${m.time}</div>
+                        <div class="text-[9px] font-bold text-slate-500 border border-slate-200 px-2 py-1 rounded-md truncate max-w-[140px] md:max-w-full flex items-center gap-1"><i class="fas fa-map-marker-alt text-[#004684]"></i> ${m.venue}</div>
+                    </div>
+                    <div class="flex-1 flex flex-col items-center justify-center w-full md:border-x border-slate-50 md:px-6 py-2 md:py-0">
+                        <div class="flex items-center justify-between md:justify-center gap-2 md:gap-6 w-full">
+                            <div class="flex-1 flex flex-col md:flex-row items-center justify-end text-center md:text-right gap-1 md:gap-3">
+                                <span class="text-[10px] md:text-[12px] font-black uppercase leading-tight line-clamp-2 md:line-clamp-1 mt-1 md:mt-0 text-slate-800 order-2 md:order-1">${cleanTeamName(m.t1)}</span>
+                                ${getLogoHtml(m.t1, "w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 shrink-0 order-1 md:order-2")}
+                            </div>
+                            <div class="flex flex-col items-center justify-center shrink-0 w-24">
+                                ${played ? `<div class="flex items-center gap-1"><div class="score-box ${isWin && isOurClub(m.t1) ? '!bg-emerald-500' : ''}">${m.s1}</div><div class="text-slate-300 font-black text-xl">:</div><div class="score-box ${isWin && isOurClub(m.t2) ? '!bg-emerald-500' : ''}">${m.s2}</div></div>` : `<div class="bg-slate-50 text-[#004684] px-4 py-2.5 rounded-2xl text-sm font-black border border-slate-200 shadow-sm">VS</div>`}
+                            </div>
+                            <div class="flex-1 flex flex-col md:flex-row items-center justify-start text-center md:text-left gap-1 md:gap-3">
+                                ${getLogoHtml(m.t2, "w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 shrink-0")}
+                                <span class="text-[10px] md:text-[12px] font-black uppercase leading-tight line-clamp-2 md:line-clamp-1 mt-1 md:mt-0 text-slate-800">${cleanTeamName(m.t2)}</span>
+                            </div>
                         </div>
-                        <div class="text-[9px] font-black uppercase bg-[#004684]/10 text-[#004684] px-2 py-1 rounded-md flex items-center gap-1 shrink-0">
-                            <i class="far fa-clock"></i> ${m.date} - ${m.time}
-                        </div>
-                        <div class="text-[9px] font-bold text-slate-500 border border-slate-200 px-2 py-1 rounded-md truncate max-w-[140px] flex items-center gap-1">
-                            <i class="fas fa-map-marker-alt text-[#004684]"></i> ${m.venue}
+                        ${setsHtml}
+                    </div>
+                    <div class="flex items-center justify-between md:flex-col md:justify-center md:items-end gap-3 mt-auto md:mt-0 pt-4 md:pt-0 border-t md:border-t-0 border-slate-50 md:w-[130px] lg:w-[150px] shrink-0">
+                        <div class="w-auto md:w-full">${resultBadge}</div>
+                        <div class="flex gap-1.5 sm:gap-2 w-full justify-end md:flex-col">
+                            <button onclick="openShare('${safeM}')" class="bg-[#25D366] text-white text-[9px] font-black px-3 py-1.5 rounded-bl-xl rounded-tr-xl md:rounded-xl uppercase tracking-wider flex items-center justify-center gap-1.5 hover:bg-[#20bd5a] transition-colors shadow-sm md:w-full"><i class="fab fa-whatsapp text-[13px]"></i> <span class="hidden sm:inline">Paylaş</span></button>
+                            ${played ? `<button onclick="openReport('${safeM}')" class="bg-rose-500 text-white text-[9px] font-black px-3 py-1.5 rounded-bl-xl rounded-tr-xl md:rounded-xl uppercase tracking-wider flex items-center justify-center gap-1.5 hover:bg-rose-600 transition-colors shadow-sm md:w-full"><i class="fas fa-file-pdf text-[13px]"></i> <span class="hidden sm:inline">Rapor</span></button>` : ''}
                         </div>
                     </div>
-
-                    <!-- ORTA ALAN: Takım 1 | Skor | Takım 2 -->
-                    <div class="flex items-center justify-between gap-2 mt-2">
-                        <div class="flex-1 flex flex-col items-center text-center gap-1">
-                            ${getLogoHtml(m.t1, "w-14 h-14")}
-                            <span class="text-[10px] font-black uppercase leading-tight line-clamp-2 mt-1 text-slate-800">${cleanTeamName(m.t1)}</span>
-                        </div>
-                        
-                        <div class="flex flex-col items-center justify-center shrink-0 w-24">
-                            ${played ? `
-                                <div class="flex items-center gap-1">
-                                    <div class="score-box ${isWin && isOurClub(m.t1) ? '!bg-emerald-500' : ''}">${m.s1}</div>
-                                    <div class="text-slate-300 font-black text-xl">:</div>
-                                    <div class="score-box ${isWin && isOurClub(m.t2) ? '!bg-emerald-500' : ''}">${m.s2}</div>
-                                </div>
-                            ` : `<div class="bg-slate-50 text-[#004684] px-4 py-2.5 rounded-2xl text-sm font-black border border-slate-200 shadow-sm">VS</div>`}
-                        </div>
-
-                        <div class="flex-1 flex flex-col items-center text-center gap-1">
-                            ${getLogoHtml(m.t2, "w-14 h-14")}
-                            <span class="text-[10px] font-black uppercase leading-tight line-clamp-2 mt-1 text-slate-800">${cleanTeamName(m.t2)}</span>
-                        </div>
-                    </div>
-
-                    ${setsHtml}
-
-                    <!-- ALT ALAN: Butonlar ve Durum Etiketi -->
-                    <div class="flex items-center justify-between mt-auto pt-4 border-t border-slate-50">
-                        <div class="flex gap-2">
-                            <button onclick="openShare('${safeM}')" class="bg-[#25D366] text-white text-[9px] font-black px-4 py-1.5 rounded-bl-xl rounded-tr-xl uppercase tracking-wider flex items-center gap-1.5 hover:bg-[#20bd5a] transition-colors shadow-sm">
-                                <i class="fab fa-whatsapp text-[13px]"></i> Paylaş
-                            </button>
-                            ${played ? `
-                            <button onclick="openReport('${safeM}')" class="bg-rose-500 text-white text-[9px] font-black px-4 py-1.5 rounded-bl-xl rounded-tr-xl uppercase tracking-wider flex items-center gap-1.5 hover:bg-rose-600 transition-colors shadow-sm">
-                                <i class="fas fa-file-pdf text-[13px]"></i> Rapor
-                            </button>` : ''}
-                        </div>
-                        ${resultBadge}
-                    </div>
-                </div>
-                `;
+                </div>`;
             };
 
             let htmlOut = '';
-
-            // Gelecek Maçlar Bölümü
             if (upcomingMatches.length > 0) {
-                htmlOut += `
-                <div class="col-span-1 md:col-span-2 mt-2 mb-2 flex items-center gap-3">
-                    <h3 class="text-xs sm:text-sm font-black text-[#004684] uppercase tracking-widest bg-brand/20 px-3 py-1.5 rounded-lg border border-brand/30"><i class="far fa-calendar-alt text-[#004684] mr-1.5"></i> Gelecek Maçlar <span class="bg-white text-brand-dark px-1.5 py-0.5 rounded ml-1.5 shadow-sm">${upcomingMatches.length}</span></h3>
-                    <div class="h-px bg-slate-200 flex-1"></div>
-                </div>`;
+                htmlOut += `<div class="w-full mt-2 mb-2 flex items-center gap-3"><h3 class="text-xs sm:text-sm font-black text-[#004684] uppercase tracking-widest bg-brand/20 px-3 py-1.5 rounded-lg border border-brand/30"><i class="far fa-calendar-alt text-[#004684] mr-1.5"></i> Gelecek Maçlar <span class="bg-white text-brand-dark px-1.5 py-0.5 rounded ml-1.5 shadow-sm">${upcomingMatches.length}</span></h3><div class="h-px bg-slate-200 flex-1"></div></div>`;
                 htmlOut += upcomingMatches.map(generateCardHtml).join('');
             }
-
-            // Oynanan Maçlar Bölümü
             if (playedMatches.length > 0) {
-                htmlOut += `
-                <div class="col-span-1 md:col-span-2 mt-6 mb-2 flex items-center gap-3">
-                    <h3 class="text-xs sm:text-sm font-black text-slate-500 uppercase tracking-widest bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200"><i class="fas fa-history text-slate-400 mr-1.5"></i> Oynanan Maçlar <span class="bg-white text-slate-500 px-1.5 py-0.5 rounded ml-1.5 shadow-sm">${playedMatches.length}</span></h3>
-                    <div class="h-px bg-slate-200 flex-1"></div>
-                </div>`;
+                htmlOut += `<div class="w-full mt-6 mb-2 flex items-center gap-3"><h3 class="text-xs sm:text-sm font-black text-slate-500 uppercase tracking-widest bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200"><i class="fas fa-history text-slate-400 mr-1.5"></i> Oynanan Maçlar <span class="bg-white text-slate-500 px-1.5 py-0.5 rounded ml-1.5 shadow-sm">${playedMatches.length}</span></h3><div class="h-px bg-slate-200 flex-1"></div></div>`;
                 htmlOut += playedMatches.map(generateCardHtml).join('');
             }
-
-            mC.innerHTML = htmlOut;
+            if(mC) mC.innerHTML = htmlOut;
         }
     }
 
@@ -1617,300 +1072,368 @@
         state.currentInteractionMatch = m;
         
         document.getElementById('whatsapp-modal').style.display = 'flex';
-        document.getElementById('wa-note').value = '';
-        document.getElementById('wa-jersey').value = '';
-        document.getElementById('wa-new-player').value = '';
+        document.getElementById('wa-note').value = ''; document.getElementById('wa-jersey').value = ''; document.getElementById('wa-new-player').value = '';
         
         const played = isMatchPlayed(m);
         document.getElementById('wa-match-info').innerHTML = `
-            <div class="flex-1 flex flex-col items-center justify-center gap-1 text-center">
-                ${getLogoHtml(m.t1, "w-10 h-10 sm:w-12 sm:h-12")}
-                <span class="text-[10px] font-black uppercase text-slate-800 leading-tight">${cleanTeamName(m.t1)}</span>
-            </div>
-            <div class="shrink-0 flex items-center justify-center px-2">
-                <div class="px-3 py-1.5 bg-slate-200 rounded-xl text-base font-black text-slate-700">${played ? `${m.s1} - ${m.s2}` : 'VS'}</div>
-            </div>
-            <div class="flex-1 flex flex-col items-center justify-center gap-1 text-center">
-                ${getLogoHtml(m.t2, "w-10 h-10 sm:w-12 sm:h-12")}
-                <span class="text-[10px] font-black uppercase text-slate-800 leading-tight">${cleanTeamName(m.t2)}</span>
-            </div>
+            <div class="flex-1 flex flex-col items-center justify-center gap-1 text-center">${getLogoHtml(m.t1, "w-10 h-10 sm:w-12 sm:h-12")}<span class="text-[10px] font-black uppercase text-slate-800 leading-tight">${cleanTeamName(m.t1)}</span></div>
+            <div class="shrink-0 flex items-center justify-center px-2"><div class="px-3 py-1.5 bg-slate-200 rounded-xl text-base font-black text-slate-700">${played ? `${m.s1} - ${m.s2}` : 'VS'}</div></div>
+            <div class="flex-1 flex flex-col items-center justify-center gap-1 text-center">${getLogoHtml(m.t2, "w-10 h-10 sm:w-12 sm:h-12")}<span class="text-[10px] font-black uppercase text-slate-800 leading-tight">${cleanTeamName(m.t2)}</span></div>
         `;
 
-        const futureSec = document.getElementById('wa-future-section');
-        const playedSec = document.getElementById('wa-played-section');
-
         if (!played) { 
-            futureSec.classList.remove('hidden'); 
-            playedSec.classList.add('hidden');
-            
-            // Kadroyu Çek ve state.currentWaRoster'a ata
+            document.getElementById('wa-future-section').classList.remove('hidden'); document.getElementById('wa-played-section').classList.add('hidden');
             state.currentWaRoster = [];
-            const cat = getGroupCode(m);
-            let targetRoster = null;
-            let bestMatchLength = 0;
+            let targetRoster = null, bestMatchLength = 0; const cat = getGroupCode(m);
             for(let key in state.rosters) {
-                const normCat = superNormalize(cat);
-                const normKey = superNormalize(key);
-                if(normCat.includes(normKey) || normKey.includes(normCat)) {
-                    if (key.length > bestMatchLength) {
-                        bestMatchLength = key.length;
-                        targetRoster = state.rosters[key]; 
-                    }
+                if(superNormalize(cat).includes(superNormalize(key)) || superNormalize(key).includes(superNormalize(cat))) {
+                    if (key.length > bestMatchLength) { bestMatchLength = key.length; targetRoster = state.rosters[key]; }
                 }
             }
-
-            if (targetRoster && targetRoster.players) {
-                state.currentWaRoster = targetRoster.players.map(p => ({
-                    name: p.name,
-                    pos: p.pos || '',
-                    no: p.no || ''
-                }));
-            }
+            if (targetRoster && targetRoster.players) state.currentWaRoster = targetRoster.players.map(p => ({ name: p.name, pos: p.pos || '', no: p.no || '' }));
             renderWaRoster();
         } else {
-            futureSec.classList.add('hidden'); 
-            playedSec.classList.remove('hidden');
-            
-            // Oynanmış maç ise set inputunu doldur
+            document.getElementById('wa-future-section').classList.add('hidden'); document.getElementById('wa-played-section').classList.remove('hidden');
             document.getElementById('wa-sets-input').value = (m.sets && m.sets !== '-') ? m.sets : '';
         }
     }
 
     function renderWaRoster() {
         const container = document.getElementById('wa-roster-list');
-        if(state.currentWaRoster.length === 0) {
-            container.innerHTML = '<div class="text-xs text-slate-400 text-center py-2 italic">Bu kategori için kadro bulunamadı. Lütfen manuel ekleyin.</div>';
-            return;
-        }
-
-        container.innerHTML = state.currentWaRoster.map((p, idx) => `
-            <div class="flex items-center justify-between bg-white border border-slate-100 p-2 rounded-lg shadow-sm">
-                <div class="flex items-center gap-2">
-                    <span class="text-[10px] font-black bg-brand text-[#004684] px-1.5 py-0.5 rounded leading-none">${p.no || '-'}</span>
-                    <span class="text-[11px] font-black text-slate-800 uppercase">${p.name}</span>
-                    ${p.pos && p.pos !== 'Oyuncu' && p.pos !== 'MEVKİ' ? `<span class="text-[9px] font-bold text-slate-400 uppercase">(${p.pos})</span>` : ''}
-                </div>
-                <button onclick="removeWaPlayer(${idx})" class="text-rose-400 hover:text-rose-600 w-6 h-6 flex items-center justify-center rounded-full hover:bg-rose-50 transition-colors">
-                    <i class="fas fa-trash-alt text-[10px]"></i>
-                </button>
-            </div>
-        `).join('');
+        if(state.currentWaRoster.length === 0) { container.innerHTML = '<div class="text-xs text-slate-400 text-center py-2 italic border rounded-xl border-dashed">Bu kategori için kadro bulunamadı.</div>'; return; }
+        container.innerHTML = state.currentWaRoster.map((p, idx) => `<div class="flex items-center justify-between bg-white border border-slate-100 p-2 rounded-lg shadow-sm"><div class="flex items-center gap-2"><span class="text-[10px] font-black bg-brand text-[#004684] px-1.5 py-0.5 rounded leading-none">${p.no || '-'}</span><span class="text-[11px] font-black text-slate-800 uppercase">${p.name}</span>${p.pos && p.pos !== 'Oyuncu' && p.pos !== 'MEVKİ' ? `<span class="text-[9px] font-bold text-slate-400 uppercase">(${p.pos})</span>` : ''}</div><button onclick="removeWaPlayer(${idx})" class="text-rose-400 hover:text-rose-600 w-6 h-6 flex items-center justify-center rounded-full hover:bg-rose-50 transition-colors"><i class="fas fa-trash-alt text-[10px]"></i></button></div>`).join('');
     }
 
-    function removeWaPlayer(idx) {
-        state.currentWaRoster.splice(idx, 1);
-        renderWaRoster();
-    }
-
+    function removeWaPlayer(idx) { state.currentWaRoster.splice(idx, 1); renderWaRoster(); }
     function addWaPlayer() {
-        const input = document.getElementById('wa-new-player');
-        const val = input.value.trim();
-        if(!val) return;
-
-        // Girilen isimde "-" varsa mevkisini otomatik ayırmak için ufak bir mantık (Örn: "Ahmet - Pasör")
-        let name = val;
-        let pos = '';
-        if (val.includes('-')) {
-            const parts = val.split('-');
-            name = parts[0].trim();
-            pos = parts.slice(1).join('-').trim();
-        }
-
-        state.currentWaRoster.push({
-            name: name,
-            pos: pos,
-            no: '-'
-        });
-
-        input.value = '';
-        renderWaRoster();
+        const input = document.getElementById('wa-new-player'); const val = input.value.trim(); if(!val) return;
+        let name = val, pos = ''; if (val.includes('-')) { const parts = val.split('-'); name = parts[0].trim(); pos = parts.slice(1).join('-').trim(); }
+        state.currentWaRoster.push({ name: name, pos: pos, no: '-' }); input.value = ''; renderWaRoster();
     }
 
     function sendWhatsapp() {
-        const m = state.currentInteractionMatch;
-        const played = isMatchPlayed(m);
-        
-        let text = "";
+        const m = state.currentInteractionMatch; const played = isMatchPlayed(m); let text = "";
 
         if (played) { 
-            // MAÇ SONUCU PAYLAŞIMI
-            text += `🏐 *${APP_CONFIG.clubDisplayName} - MAÇ SONUCU*\n\n`;
-            text += `🏆 *Kategori:* ${getGroupCode(m)}\n`;
-            text += `📅 *Tarih:* ${m.date} - ${m.time}\n`;
-            text += `📍 *Salon:* ${m.venue}\n\n`;
-            
-            // Skor ve takımlar tek satırda birleşti
-            text += `📊 *Maç Sonucu:* ${cleanTeamName(m.t1)} *${m.s1} - ${m.s2}* ${cleanTeamName(m.t2)}\n`; 
-            
+            text += `🏐 *${APP_CONFIG.clubDisplayName} - MAÇ SONUCU*\n\n🏆 *Kategori:* ${getGroupCode(m)}\n📅 *Tarih:* ${m.date} - ${m.time}\n📍 *Salon:* ${m.venue}\n\n📊 *Maç Sonucu:* ${cleanTeamName(m.t1)} *${m.s1} - ${m.s2}* ${cleanTeamName(m.t2)}\n`; 
             const setsValue = document.getElementById('wa-sets-input').value.trim();
             if (setsValue && setsValue !== '-') {
-                // Sadece skor sayılarını (Örn: 25-20) çeker ve set numaralandırması yapar
                 const setMatches = setsValue.match(/\d+\s*-\s*\d+/g);
-                if (setMatches && setMatches.length > 0) {
-                    text += `🔢 *Setler:*\n`;
-                    setMatches.forEach((s, idx) => {
-                        text += `  • Set ${idx + 1}: ${s}\n`;
-                    });
-                } else {
-                    text += `🔢 *Setler:* ${setsValue}\n`; 
-                }
+                if (setMatches && setMatches.length > 0) { text += `🔢 *Setler:*\n`; setMatches.forEach((s, idx) => text += `  • Set ${idx + 1}: ${s}\n`); } else text += `🔢 *Setler:* ${setsValue}\n`; 
             }
-            
-            const note = document.getElementById('wa-note').value.trim();
-            if (note) text += `\n📌 *Not:* ${note}\n`;
-            
+            const note = document.getElementById('wa-note').value.trim(); if (note) text += `\n📌 *Not:* ${note}\n`;
         } else {
-            // GELECEK MAÇ PAYLAŞIMI
-            text += `🏐 *${APP_CONFIG.clubDisplayName} - MAÇ BİLGİSİ*\n\n`;
-            text += `🏆 *Kategori:* ${getGroupCode(m)}\n`;
-            text += `🆚 *Maç:* ${cleanTeamName(m.t1)} vs ${cleanTeamName(m.t2)}\n`;
-            text += `📅 *Tarih:* ${m.date} - ${m.time}\n`;
-            text += `📍 *Salon:* ${m.venue}\n`;
-
-            const time = document.getElementById('wa-meet-time').value;
-            const loc = document.getElementById('wa-meet-loc').value;
-            if(time || loc) {
-                text += `\n⏰ *Toplanma:* ${time} ${loc ? '- '+loc : ''}\n`;
-            }
-
-            const jersey = document.getElementById('wa-jersey').value.trim();
-            if (jersey) {
-                text += `👕 *Maç Forması:* ${jersey}\n`;
-            }
-            
-            const note = document.getElementById('wa-note').value.trim();
-            if (note) text += `\n📌 *Not:* ${note}\n`;
-
-            // Kadroyu WhatsApp Mesajına Dahil Etme
+            text += `🏐 *${APP_CONFIG.clubDisplayName} - MAÇ BİLGİSİ*\n\n🏆 *Kategori:* ${getGroupCode(m)}\n🆚 *Maç:* ${cleanTeamName(m.t1)} vs ${cleanTeamName(m.t2)}\n📅 *Tarih:* ${m.date} - ${m.time}\n📍 *Salon:* ${m.venue}\n`;
+            const time = document.getElementById('wa-meet-time').value; const loc = document.getElementById('wa-meet-loc').value;
+            if(time || loc) text += `\n⏰ *Toplanma:* ${time} ${loc ? '- '+loc : ''}\n`;
+            const jersey = document.getElementById('wa-jersey').value.trim(); if (jersey) text += `👕 *Maç Forması:* ${jersey}\n`;
+            const note = document.getElementById('wa-note').value.trim(); if (note) text += `\n📌 *Not:* ${note}\n`;
             if (state.currentWaRoster && state.currentWaRoster.length > 0) {
-                text += `\n👥 *MAÇ KADROSU*\n`;
-                state.currentWaRoster.forEach((p, idx) => {
-                    let pInfo = `${idx + 1}. ${p.name}`;
-                    if (p.pos && p.pos !== 'Oyuncu' && p.pos !== 'MEVKİ') {
-                        pInfo += ` (${p.pos})`;
-                    }
-                    text += `${pInfo}\n`;
-                });
+                text += `\n👥 *MAÇ KADROSU*\n`; state.currentWaRoster.forEach((p, idx) => { let pInfo = `${idx + 1}. ${p.name}`; if (p.pos && p.pos !== 'Oyuncu' && p.pos !== 'MEVKİ') pInfo += ` (${p.pos})`; text += `${pInfo}\n`; });
             }
         }
-
-        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
-        closeModal('whatsapp-modal');
+        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank'); closeModal('whatsapp-modal');
     }
 
     function openReport(mStr) {
-        const m = JSON.parse(decodeURIComponent(mStr));
-        state.currentInteractionMatch = m;
-        
+        const m = JSON.parse(decodeURIComponent(mStr)); state.currentInteractionMatch = m;
         document.getElementById('report-modal').style.display = 'flex';
-        document.getElementById('rep-match-info').innerHTML = `
-            <div class="flex-1 text-right text-xs font-black uppercase text-slate-800">${cleanTeamName(m.t1)}</div>
-            <div class="shrink-0 px-3 py-1 bg-brand text-white rounded-lg text-sm font-black">${m.s1}-${m.s2}</div>
-            <div class="flex-1 text-left text-xs font-black uppercase text-slate-800">${cleanTeamName(m.t2)}</div>
-        `;
-        
-        // Reset form
-        document.getElementById('rep-summary').value = '';
-        ['serve','recv','atk','def','spirit'].forEach(k => document.getElementById(`rep-s-${k}`).value = 3);
-        document.getElementById('rep-focus-tech').value = '';
-        document.getElementById('rep-focus-mental').value = '';
+        document.getElementById('rep-match-info').innerHTML = `<div class="flex-1 text-right text-xs font-black uppercase text-slate-800">${cleanTeamName(m.t1)}</div><div class="shrink-0 px-3 py-1 bg-brand text-white rounded-lg text-sm font-black">${m.s1}-${m.s2}</div><div class="flex-1 text-left text-xs font-black uppercase text-slate-800">${cleanTeamName(m.t2)}</div>`;
+        document.getElementById('rep-summary').value = ''; ['serve','recv','atk','def','spirit'].forEach(k => document.getElementById(`rep-s-${k}`).value = 3); document.getElementById('rep-focus-tech').value = ''; document.getElementById('rep-focus-mental').value = '';
+    }
+
+    // ==========================================
+    // 🖨️ YENİ NESİL YAZDIRMA SİSTEMİ (KOMPAKT VE TEK SAYFA ODAKLI)
+    // ==========================================
+    
+    function openPrintWindow(title, contentHtml) {
+        const printHtml = `
+        <!DOCTYPE html>
+        <html lang="tr">
+        <head>
+            <meta charset="UTF-8">
+            <title>${title}</title>
+            <style>
+                @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;900&display=swap');
+                body { font-family: 'Plus Jakarta Sans', sans-serif; background: white; color: #0f172a; margin: 0; padding: 0; line-height: 1.2; font-size: 10px; }
+                .print-container { padding: 10px; max-width: 210mm; margin: 0 auto; box-sizing: border-box; }
+                table { width: 100%; border-collapse: collapse; page-break-inside: avoid; }
+                tr { page-break-inside: avoid; page-break-after: auto; }
+                thead { display: table-header-group; }
+                tfoot { display: table-footer-group; }
+                
+                /* TEK SAYFA İÇİN MAKSİMUM DARALTILMIŞ MARJLAR */
+                @page { size: A4 portrait; margin: 5mm; }
+                @media print {
+                    body { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; background: white; }
+                    .print-container { width: 100%; max-width: none; padding: 0; margin: 0; }
+                    .no-print { display: none; }
+                }
+            </style>
+        </head>
+        <body>
+            <div class="print-container">
+                ${contentHtml}
+            </div>
+            <script>
+                window.onload = function() {
+                    setTimeout(function() {
+                        window.print();
+                    }, 500);
+                };
+            <\/script>
+        </body>
+        </html>`;
+
+        const printWindow = window.open('', '_blank');
+        if (printWindow) {
+            printWindow.document.open();
+            printWindow.document.write(printHtml);
+            printWindow.document.close();
+        } else {
+            alert("PDF penceresi açılamadı! Lütfen tarayıcınızın 'Açılır Pencere (Pop-up)' engelleyicisini kapatın.");
+        }
     }
 
     function downloadPDF(event) {
-        const btn = event.currentTarget; 
-        const origHtml = btn.innerHTML;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin text-xl"></i> Hazırlanıyor...';
-        btn.disabled = true;
+        closeModal('report-modal');
 
-        const m = state.currentInteractionMatch;
-        const isWin = didClubWin(m);
-        
-        // Form Data
-        const summ = document.getElementById('rep-summary').value || '-';
-        const scores = {
-            serve: document.getElementById('rep-s-serve').value,
-            recv: document.getElementById('rep-s-recv').value,
-            atk: document.getElementById('rep-s-atk').value,
-            def: document.getElementById('rep-s-def').value,
-            spirit: document.getElementById('rep-s-spirit').value,
-        };
-        const fTech = document.getElementById('rep-focus-tech').value || '-';
+        const m = state.currentInteractionMatch; const isWin = didClubWin(m);
+        const summ = document.getElementById('rep-summary').value || '-'; 
+        const scores = { serve: document.getElementById('rep-s-serve').value, recv: document.getElementById('rep-s-recv').value, atk: document.getElementById('rep-s-atk').value, def: document.getElementById('rep-s-def').value, spirit: document.getElementById('rep-s-spirit').value }; 
+        const fTech = document.getElementById('rep-focus-tech').value || '-'; 
         const fMen = document.getElementById('rep-focus-mental').value || '-';
+        
+        const logoUrl = getLogoHtml(APP_CONFIG.clubSearchNames[0], "").match(/src="([^"]+)"/)?.[1]; 
+        const initials = APP_CONFIG.clubSearchNames[0].substring(0,2).toUpperCase();
+        const logoImgHtml = logoUrl ? `<img src="${logoUrl}" style="width:40px; height:40px; object-fit:contain; border-radius:50%;">` : `<div style="width:40px; height:40px; border-radius:20px; background-color:#f1f5f9; border:1px solid #cbd5e1; text-align:center; line-height:40px; font-weight:900; color:#64748b; font-size:16px; display:inline-block;">${initials}</div>`;
 
-        const logoUrl = getLogoHtml(APP_CONFIG.clubSearchNames[0], "").match(/src="([^"]+)"/)?.[1];
-        const logoImgHtml = logoUrl ? `<img src="${logoUrl}" style="width:60px; height:60px; object-fit:contain; border-radius:50%;">` : '';
-
-        const html = `
-        <div style="width: 794px; background: white; padding: 40px; font-family: sans-serif; color: #1e293b;">
-            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 4px solid ${APP_CONFIG.colors.primary}; padding-bottom:20px; margin-bottom:20px;">
-                <div style="display:flex; align-items:center; gap:15px;">
+        // COMPACT HTML FOR SINGLE REPORT
+        const htmlContent = `
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 2px solid ${APP_CONFIG.colors.primary}; padding-bottom:8px; margin-bottom:10px;">
+                <div style="display:flex; align-items:center; gap:10px;">
                     ${logoImgHtml}
                     <div>
-                        <h1 style="margin:0; font-size:24px; font-weight:900; text-transform:uppercase; color:${APP_CONFIG.colors.secondary};">${APP_CONFIG.clubDisplayName}</h1>
-                        <p style="margin:5px 0 0 0; font-size:14px; font-weight:700; color:#64748b; letter-spacing:1px;">RESMİ MAÇ RAPORU</p>
+                        <h1 style="margin:0; font-size:18px; font-weight:900; text-transform:uppercase; color:${APP_CONFIG.colors.secondary};">${APP_CONFIG.clubDisplayName}</h1>
+                        <p style="margin:2px 0 0 0; font-size:10px; font-weight:700; color:#64748b; letter-spacing:1px;">RESMİ MAÇ RAPORU</p>
                     </div>
                 </div>
                 <div style="text-align:right;">
-                    <div style="font-size:12px; font-weight:800; color:#94a3b8;">${getTodayString()}</div>
+                    <div style="font-size:10px; font-weight:800; color:#94a3b8;">${getTodayString()}</div>
                 </div>
             </div>
-
-            <div style="background:#f8fafc; padding:20px; border-radius:12px; margin-bottom:25px; border:1px solid #e2e8f0;">
-                <table style="width:100%; font-size:14px;">
+            
+            <div style="background:#f8fafc; padding:10px; border-radius:8px; margin-bottom:15px; border:1px solid #e2e8f0;">
+                <table style="width:100%; font-size:11px;">
                     <tr>
-                        <td style="color:#64748b; font-weight:bold; padding-bottom:10px;">Kategori / Grup:</td>
-                        <td style="font-weight:900; color:#0f172a; padding-bottom:10px;">${getGroupCode(m)}</td>
-                        <td style="color:#64748b; font-weight:bold; padding-bottom:10px; text-align:right;">Tarih / Salon:</td>
-                        <td style="font-weight:900; color:#0f172a; padding-bottom:10px; text-align:right;">${m.date} - ${m.venue}</td>
+                        <td style="color:#64748b; font-weight:bold; padding-bottom:5px;">Kategori / Grup:</td>
+                        <td style="font-weight:900; color:#0f172a; padding-bottom:5px;">${getGroupCode(m)}</td>
+                        <td style="color:#64748b; font-weight:bold; padding-bottom:5px; text-align:right;">Tarih / Salon:</td>
+                        <td style="font-weight:900; color:#0f172a; padding-bottom:5px; text-align:right;">${m.date} - ${m.venue}</td>
                     </tr>
                     <tr>
                         <td style="color:#64748b; font-weight:bold;">Rakip Takım:</td>
                         <td style="font-weight:900; color:#0f172a;">${cleanTeamName(isOurClub(m.t1) ? m.t2 : m.t1)}</td>
                         <td style="color:#64748b; font-weight:bold; text-align:right;">Sonuç:</td>
-                        <td style="font-weight:900; color:${isWin?'#10b981':'#f43f5e'}; text-align:right; font-size:18px;">${m.s1} - ${m.s2} (${isWin?'Galibiyet':'Mağlubiyet'})</td>
+                        <td style="font-weight:900; color:${isWin?'#10b981':'#f43f5e'}; text-align:right; font-size:14px;">${m.s1} - ${m.s2} (${isWin?'Galibiyet':'Mağlubiyet'})</td>
                     </tr>
                 </table>
             </div>
 
-            <h3 style="font-size:14px; color:${APP_CONFIG.colors.primary}; border-bottom:2px solid #e2e8f0; padding-bottom:8px; margin-bottom:15px; text-transform:uppercase; font-weight:900;">MAÇIN ÖZETİ</h3>
-            <p style="font-size:14px; line-height:1.6; font-weight:500; margin-bottom:30px;">${summ}</p>
-
-            <h3 style="font-size:14px; color:${APP_CONFIG.colors.primary}; border-bottom:2px solid #e2e8f0; padding-bottom:8px; margin-bottom:15px; text-transform:uppercase; font-weight:900;">TAKIM İSTATİSTİĞİ (1-5 Puan)</h3>
-            <div style="display:flex; justify-content:space-between; background:#f1f5f9; padding:15px 20px; border-radius:10px; margin-bottom:30px;">
-                <div style="text-align:center;"><div style="font-size:12px; font-weight:bold; color:#64748b; margin-bottom:5px;">Servis</div><div style="font-size:24px; font-weight:900; color:${APP_CONFIG.colors.secondary};">${scores.serve}</div></div>
-                <div style="text-align:center;"><div style="font-size:12px; font-weight:bold; color:#64748b; margin-bottom:5px;">Manşet</div><div style="font-size:24px; font-weight:900; color:${APP_CONFIG.colors.secondary};">${scores.recv}</div></div>
-                <div style="text-align:center;"><div style="font-size:12px; font-weight:bold; color:#64748b; margin-bottom:5px;">Hücum</div><div style="font-size:24px; font-weight:900; color:${APP_CONFIG.colors.secondary};">${scores.atk}</div></div>
-                <div style="text-align:center;"><div style="font-size:12px; font-weight:bold; color:#64748b; margin-bottom:5px;">Defans</div><div style="font-size:24px; font-weight:900; color:${APP_CONFIG.colors.secondary};">${scores.def}</div></div>
-                <div style="text-align:center;"><div style="font-size:12px; font-weight:bold; color:#64748b; margin-bottom:5px;">Takım Ruhu</div><div style="font-size:24px; font-weight:900; color:${APP_CONFIG.colors.secondary};">${scores.spirit}</div></div>
+            <h3 style="font-size:12px; color:${APP_CONFIG.colors.primary}; border-bottom:1px solid #e2e8f0; padding-bottom:4px; margin-bottom:8px; text-transform:uppercase; font-weight:900;">MAÇIN ÖZETİ</h3>
+            <p style="font-size:11px; line-height:1.4; font-weight:500; margin-bottom:15px;">${summ}</p>
+            
+            <h3 style="font-size:12px; color:${APP_CONFIG.colors.primary}; border-bottom:1px solid #e2e8f0; padding-bottom:4px; margin-bottom:8px; text-transform:uppercase; font-weight:900;">TAKIM İSTATİSTİĞİ (1-5 Puan)</h3>
+            <div style="display:flex; justify-content:space-between; background:#f1f5f9; padding:10px; border-radius:8px; margin-bottom:15px;">
+                <div style="text-align:center;"><div style="font-size:10px; font-weight:bold; color:#64748b; margin-bottom:3px;">Servis</div><div style="font-size:18px; font-weight:900; color:${APP_CONFIG.colors.secondary};">${scores.serve}</div></div>
+                <div style="text-align:center;"><div style="font-size:10px; font-weight:bold; color:#64748b; margin-bottom:3px;">Manşet</div><div style="font-size:18px; font-weight:900; color:${APP_CONFIG.colors.secondary};">${scores.recv}</div></div>
+                <div style="text-align:center;"><div style="font-size:10px; font-weight:bold; color:#64748b; margin-bottom:3px;">Hücum</div><div style="font-size:18px; font-weight:900; color:${APP_CONFIG.colors.secondary};">${scores.atk}</div></div>
+                <div style="text-align:center;"><div style="font-size:10px; font-weight:bold; color:#64748b; margin-bottom:3px;">Defans</div><div style="font-size:18px; font-weight:900; color:${APP_CONFIG.colors.secondary};">${scores.def}</div></div>
+                <div style="text-align:center;"><div style="font-size:10px; font-weight:bold; color:#64748b; margin-bottom:3px;">Takım Ruhu</div><div style="font-size:18px; font-weight:900; color:${APP_CONFIG.colors.secondary};">${scores.spirit}</div></div>
             </div>
 
-            <h3 style="font-size:14px; color:${APP_CONFIG.colors.primary}; border-bottom:2px solid #e2e8f0; padding-bottom:8px; margin-bottom:15px; text-transform:uppercase; font-weight:900;">SONRAKİ ANTRENMAN ODAKLARI</h3>
-            <table style="width:100%; border-collapse:collapse;">
-                <tr><td style="padding:15px; background:#f8fafc; border:1px solid #e2e8f0; font-weight:bold; width:150px;">Teknik Odak:</td><td style="padding:15px; border:1px solid #e2e8f0; font-weight:600;">${fTech}</td></tr>
-                <tr><td style="padding:15px; background:#f8fafc; border:1px solid #e2e8f0; font-weight:bold;">Mental Odak:</td><td style="padding:15px; border:1px solid #e2e8f0; font-weight:600;">${fMen}</td></tr>
-            </table>
-        </div>`;
+            <h3 style="font-size:12px; color:${APP_CONFIG.colors.primary}; border-bottom:1px solid #e2e8f0; padding-bottom:4px; margin-bottom:8px; text-transform:uppercase; font-weight:900;">SONRAKİ ANTRENMAN ODAKLARI</h3>
+            <table style="width:100%; border-collapse:collapse; font-size:11px;">
+                <tr><td style="padding:6px; background:#f8fafc; border:1px solid #e2e8f0; font-weight:bold; width:120px;">Teknik Odak:</td><td style="padding:6px; border:1px solid #e2e8f0; font-weight:600;">${fTech}</td></tr>
+                <tr><td style="padding:6px; background:#f8fafc; border:1px solid #e2e8f0; font-weight:bold;">Mental Odak:</td><td style="padding:6px; border:1px solid #e2e8f0; font-weight:600;">${fMen}</td></tr>
+            </table>`;
 
-        const container = document.createElement('div');
-        container.innerHTML = html;
-        container.style.position = 'absolute';
-        container.style.top = '-9999px';
-        document.body.appendChild(container);
+        openPrintWindow(`Maç Raporu - ${m.date}`, htmlContent);
+    }
 
-        setTimeout(() => {
-            html2pdf().set({
-                margin: 0,
-                filename: `${APP_CONFIG.clubSearchNames[0].replace(/\s+/g,'_')}_Rapor.pdf`,
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2 },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            }).from(container.firstElementChild).save().then(() => {
-                document.body.removeChild(container);
-                btn.innerHTML = origHtml;
-                btn.disabled = false;
-                closeModal('report-modal');
-            });
-        }, 500);
+    function openCategoryReportPreview(event) {
+        const cat = state.selectedCategory;
+        if(cat === 'all') return;
+
+        const standings = calculateStandings(cat);
+        const isTwoSetFormat = isCategoryTwoSet(cat);
+        const isMinikGrp = isCategoryMinik(cat);
+
+        const validTeams = getValidTeamsForCategory(cat);
+        const pool = state.rawMatches.filter(m => getGroupCode(m) === cat && validTeams.has(cleanTeamName(m.t1)) && validTeams.has(cleanTeamName(m.t2)));
+        
+        const upcomingMatches = pool.filter(m => !isMatchPlayed(m)).sort((a,b) => {
+            const isUsA = isOurClub(a.t1) || isOurClub(a.t2); const isUsB = isOurClub(b.t1) || isOurClub(b.t2);
+            if (isUsA && !isUsB) return -1; if (!isUsA && isUsB) return 1;
+            return a.date.split('.').reverse().join('').localeCompare(b.date.split('.').reverse().join(''));
+        });
+        
+        const playedMatches = pool.filter(m => isMatchPlayed(m)).sort((a,b) => {
+            const isUsA = isOurClub(a.t1) || isOurClub(a.t2); const isUsB = isOurClub(b.t1) || isOurClub(b.t2);
+            if (isUsA && !isUsB) return -1; if (!isUsA && isUsB) return 1;
+            return b.date.split('.').reverse().join('').localeCompare(a.date.split('.').reverse().join(''));
+        });
+        const allCatMatches = [...upcomingMatches, ...playedMatches];
+
+        let targetRoster = null, bestMatchLength = 0;
+        for(let key in state.rosters) {
+            if(superNormalize(cat).includes(superNormalize(key)) || superNormalize(key).includes(superNormalize(cat))) {
+                if (key.length > bestMatchLength) { bestMatchLength = key.length; targetRoster = state.rosters[key]; }
+            }
+        }
+
+        // COMPACT HTML FOR CATEGORY REPORT
+        let standingsHtmlLocal = '';
+        if (standings.length > 0) {
+            let sHeaders = !isTwoSetFormat ? `<th style="padding:3px 2px; text-align:center; color:#10b981;">3-0</th><th style="padding:3px 2px; text-align:center; color:#10b981;">3-1</th><th style="padding:3px 2px; text-align:center; color:#10b981;">3-2</th><th style="padding:3px 2px; text-align:center; color:#f43f5e;">2-3</th><th style="padding:3px 2px; text-align:center; color:#f43f5e;">1-3</th><th style="padding:3px 2px; text-align:center; color:#f43f5e;">0-3</th>` : `<th style="padding:3px 2px; text-align:center; color:#10b981;">2-0</th><th style="padding:3px 2px; text-align:center; color:#10b981;">2-1</th><th style="padding:3px 2px; text-align:center; color:#f43f5e;">1-2</th>${isMinikGrp ? '' : `<th style="padding:3px 2px; text-align:center; color:#f43f5e;">0-2</th>`}`;
+            let sRows = standings.map((t, i) => {
+                const isUs = isOurClub(t.name);
+                let sCols = !isTwoSetFormat ? `<td style="padding:3px 2px; text-align:center;">${t.w30}</td><td style="padding:3px 2px; text-align:center;">${t.w31}</td><td style="padding:3px 2px; text-align:center;">${t.w32}</td><td style="padding:3px 2px; text-align:center;">${t.l23}</td><td style="padding:3px 2px; text-align:center;">${t.l13}</td><td style="padding:3px 2px; text-align:center;">${t.l03}</td>` : `<td style="padding:3px 2px; text-align:center;">${t.w20}</td><td style="padding:3px 2px; text-align:center;">${t.w21}</td><td style="padding:3px 2px; text-align:center;">${t.l12}</td>${isMinikGrp ? '' : `<td style="padding:3px 2px; text-align:center;">${t.l02}</td>`}`;
+                
+                const tLogoUrl = getLogoHtml(t.name, "").match(/src="([^"]+)"/)?.[1]; 
+                const tInitials = cleanTeamName(t.name).substring(0,2).toUpperCase();
+                const tLogoHtml = tLogoUrl 
+                    ? `<img src="${tLogoUrl}" style="width:12px; height:12px; object-fit:contain; border-radius:50%; vertical-align:middle; margin-right:4px;" onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='inline-block';"><span style="display:none; width:12px; height:12px; border-radius:50%; background-color:#f1f5f9; border:1px solid #cbd5e1; text-align:center; line-height:12px; font-weight:bold; color:#64748b; font-size:7px; vertical-align:middle; margin-right:4px;">${tInitials}</span>` 
+                    : `<span style="display:inline-block; width:12px; height:12px; border-radius:50%; background-color:#f1f5f9; border:1px solid #cbd5e1; text-align:center; line-height:12px; font-weight:bold; color:#64748b; font-size:7px; vertical-align:middle; margin-right:4px;">${tInitials}</span>`;
+
+                return `<tr style="border-bottom:1px solid #f1f5f9; ${isUs ? 'background-color:#fffde6; font-weight:bold;' : ''}">
+                    <td style="padding:3px 2px; text-align:center;">${i+1}</td>
+                    <td style="padding:3px 2px; text-align:left; white-space:nowrap;">${tLogoHtml}<span style="vertical-align:middle;">${cleanTeamName(t.name)}</span></td>
+                    <td style="padding:3px 2px; text-align:center;">${t.O}</td><td style="padding:3px 2px; text-align:center;">${t.G}</td>
+                    <td style="padding:3px 2px; text-align:center;">${t.M}</td><td style="padding:3px 2px; text-align:center;">${t.A}</td>
+                    <td style="padding:3px 2px; text-align:center;">${t.V}</td><td style="padding:3px 2px; text-align:center; font-weight:900;">${t.P}</td>
+                    <td style="padding:3px 2px; text-align:center;">${formatAveraj(t.A, t.V, true)}</td>
+                    <td style="padding:3px 2px; text-align:center;">${t.ASP}</td><td style="padding:3px 2px; text-align:center;">${t.VSP}</td>
+                    <td style="padding:3px 2px; text-align:center;">${formatAveraj(t.ASP, t.VSP, false)}</td>${sCols}
+                </tr>`;
+            }).join('');
+
+            standingsHtmlLocal = `<h3 style="font-size:11px; color:${APP_CONFIG.colors.primary}; border-bottom:1px solid #e2e8f0; padding-bottom:2px; margin-bottom:4px; margin-top:8px; text-transform:uppercase; font-weight:900;">PUAN DURUMU</h3>
+            <table style="width:100%; border-collapse:collapse; font-size:8px; margin-bottom:8px;">
+                <thead><tr style="background-color:#f8fafc; border-bottom:1px solid #cbd5e1; color:#475569;"><th style="padding:3px 2px; text-align:center;">#</th><th style="padding:3px 2px; text-align:left;">Takım</th><th style="padding:3px 2px; text-align:center;">O</th><th style="padding:3px 2px; text-align:center;">G</th><th style="padding:3px 2px; text-align:center;">M</th><th style="padding:3px 2px; text-align:center;">A</th><th style="padding:3px 2px; text-align:center;">V</th><th style="padding:3px 2px; text-align:center;">P</th><th style="padding:3px 2px; text-align:center;">SAV</th><th style="padding:3px 2px; text-align:center;">ASP</th><th style="padding:3px 2px; text-align:center;">VSP</th><th style="padding:3px 2px; text-align:center;">SPAV</th>${sHeaders}</tr></thead>
+                <tbody>${sRows}</tbody>
+            </table>`;
+        }
+
+        let matchesHtmlLocal = '';
+        if (allCatMatches.length > 0) {
+            let mRows = allCatMatches.map(m => {
+                const played = isMatchPlayed(m);
+                let scoreTxt = played ? `${m.s1} - ${m.s2}` : 'VS';
+                
+                let setsTxt = '-';
+                if (played && m.sets && m.sets !== '-') {
+                    const sA = [...m.sets.matchAll(/\((\d+)-(\d+)\)/g)];
+                    if (sA.length > 0) {
+                        setsTxt = `<div style="display:flex; gap:8px; justify-content:flex-start; align-items:center;">` + 
+                                  sA.map((s, idx) => `
+                                  <div style="display:flex; flex-direction:column; align-items:center; line-height:1.1;">
+                                      <span style="font-size:7px; font-weight:900; color:#94a3b8;">S${idx+1}</span>
+                                      <span style="font-size:9px; font-weight:900; color:#004684;">${s[1]}-${s[2]}</span>
+                                  </div>`).join('') + 
+                                  `</div>`;
+                    } else {
+                        setsTxt = `<div style="text-align:left;"><span style="font-size:9px; font-weight:900; color:#004684;">${m.sets.replace(/<[^>]*>/g, '')}</span></div>`;
+                    }
+                }
+
+                const isUsA = isOurClub(m.t1); const isUsB = isOurClub(m.t2);
+                let rowBg = played ? '#ffffff' : '#f8fafc';
+                
+                const t1LogoUrl = getLogoHtml(m.t1, "").match(/src="([^"]+)"/)?.[1]; 
+                const t1Initials = cleanTeamName(m.t1).substring(0,2).toUpperCase();
+                const t1LogoHtml = t1LogoUrl 
+                    ? `<img src="${t1LogoUrl}" style="width:12px; height:12px; object-fit:contain; border-radius:50%; vertical-align:middle; margin-left:4px;" onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='inline-block';"><span style="display:none; width:12px; height:12px; border-radius:50%; background-color:#f1f5f9; border:1px solid #cbd5e1; text-align:center; line-height:12px; font-weight:bold; color:#64748b; font-size:6px; vertical-align:middle; margin-left:4px;">${t1Initials}</span>` 
+                    : `<span style="display:inline-block; width:12px; height:12px; border-radius:50%; background-color:#f1f5f9; border:1px solid #cbd5e1; text-align:center; line-height:12px; font-weight:bold; color:#64748b; font-size:6px; vertical-align:middle; margin-left:4px;">${t1Initials}</span>`;
+
+                const t2LogoUrl = getLogoHtml(m.t2, "").match(/src="([^"]+)"/)?.[1]; 
+                const t2Initials = cleanTeamName(m.t2).substring(0,2).toUpperCase();
+                const t2LogoHtml = t2LogoUrl 
+                    ? `<img src="${t2LogoUrl}" style="width:12px; height:12px; object-fit:contain; border-radius:50%; vertical-align:middle; margin-right:4px;" onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='inline-block';"><span style="display:none; width:12px; height:12px; border-radius:50%; background-color:#f1f5f9; border:1px solid #cbd5e1; text-align:center; line-height:12px; font-weight:bold; color:#64748b; font-size:6px; vertical-align:middle; margin-right:4px;">${t2Initials}</span>` 
+                    : `<span style="display:inline-block; width:12px; height:12px; border-radius:50%; background-color:#f1f5f9; border:1px solid #cbd5e1; text-align:center; line-height:12px; font-weight:bold; color:#64748b; font-size:6px; vertical-align:middle; margin-right:4px;">${t2Initials}</span>`;
+
+                return `<tr style="border-bottom:1px solid #f1f5f9; background-color:${rowBg};">
+                    <td style="padding:3px 2px; text-align:left; white-space:nowrap;">${m.date} ${m.time}</td>
+                    <td style="padding:3px 2px; text-align:left;">${m.venue}</td>
+                    <td style="padding:3px 2px; text-align:right; white-space:nowrap; ${isUsA?'font-weight:bold; color:#004684;':''}"><span style="vertical-align:middle;">${cleanTeamName(m.t1)}</span>${t1LogoHtml}</td>
+                    <td style="padding:3px 2px; text-align:center; font-weight:900; font-size:10px; white-space:nowrap; min-width:40px;">${scoreTxt}</td>
+                    <td style="padding:3px 2px; text-align:left; white-space:nowrap; ${isUsB?'font-weight:bold; color:#004684;':''}">${t2LogoHtml}<span style="vertical-align:middle;">${cleanTeamName(m.t2)}</span></td>
+                    <td style="padding:3px 2px; text-align:left; white-space:nowrap;">${setsTxt}</td>
+                </tr>`;
+            }).join('');
+
+            matchesHtmlLocal = `<h3 style="font-size:11px; color:${APP_CONFIG.colors.primary}; border-bottom:1px solid #e2e8f0; padding-bottom:2px; margin-bottom:4px; margin-top:8px; text-transform:uppercase; font-weight:900;">FİKSTÜR VE MAÇ SONUÇLARI</h3>
+            <table style="width:100%; border-collapse:collapse; font-size:8px; margin-bottom:8px;">
+                <thead><tr style="background-color:#f8fafc; border-bottom:1px solid #cbd5e1; color:#475569;"><th style="padding:3px 2px; text-align:left;">Tarih/Saat</th><th style="padding:3px 2px; text-align:left;">Salon</th><th style="padding:3px 2px; text-align:right;">Ev Sahibi</th><th style="padding:3px 2px; text-align:center;">Skor</th><th style="padding:3px 2px; text-align:left;">Misafir</th><th style="padding:3px 2px; text-align:left;">Setler</th></tr></thead>
+                <tbody>${mRows}</tbody>
+            </table>`;
+        }
+
+        let rosterHtmlLocal = '';
+        if (targetRoster && targetRoster.players && targetRoster.players.length > 0) {
+            let rRows = targetRoster.players.filter(p => !p.isEmpty).map(p => {
+                const isAbsent = p.status && p.status.toLowerCase() !== 'var' && p.status.toLowerCase() !== 'geldi';
+                return `<tr style="border-bottom:1px solid #f1f5f9; ${isAbsent ? 'color:#94a3b8; text-decoration:line-through;' : ''}">
+                    <td style="padding:3px 2px; text-align:center; font-weight:bold;">${p.no}</td>
+                    <td style="padding:3px 2px; text-align:left; font-weight:bold;">${p.name}</td>
+                    <td style="padding:3px 2px; text-align:left;">${p.pos}</td>
+                    <td style="padding:3px 2px; text-align:center;">${p.attendanceCount || 0} Maç</td>
+                    <td style="padding:3px 2px; text-align:center; ${isAbsent ? 'color:#f43f5e; font-weight:bold;' : ''}">${p.status || 'Aktif'}</td>
+                </tr>`;
+            }).join('');
+
+            rosterHtmlLocal = `<h3 style="font-size:11px; color:${APP_CONFIG.colors.primary}; border-bottom:1px solid #e2e8f0; padding-bottom:2px; margin-bottom:4px; margin-top:8px; text-transform:uppercase; font-weight:900;">TAKIM KADROSU (Antrenör: ${targetRoster.coach || '-'})</h3>
+            <table style="width:100%; border-collapse:collapse; font-size:9px; margin-bottom:8px;">
+                <thead><tr style="background-color:#f8fafc; border-bottom:1px solid #cbd5e1; color:#475569;"><th style="padding:3px 2px; text-align:center; width:30px;">No</th><th style="padding:3px 2px; text-align:left;">Sporcu Adı</th><th style="padding:3px 2px; text-align:left;">Mevki</th><th style="padding:3px 2px; text-align:center;">Katılım</th><th style="padding:3px 2px; text-align:center;">Mazeret/Durum</th></tr></thead>
+                <tbody>${rRows}</tbody>
+            </table>`;
+        }
+
+        const logoUrl = getLogoHtml(APP_CONFIG.clubSearchNames[0], "").match(/src="([^"]+)"/)?.[1]; 
+        const initials = APP_CONFIG.clubSearchNames[0].substring(0,2).toUpperCase();
+        const logoImgHtml = logoUrl ? `<img src="${logoUrl}" style="width:40px; height:40px; object-fit:contain; border-radius:50%;">` : `<div style="width:40px; height:40px; border-radius:20px; background-color:#f1f5f9; border:1px solid #cbd5e1; text-align:center; line-height:40px; font-weight:900; color:#64748b; font-size:16px; display:inline-block;">${initials}</div>`;
+
+        const printArea = document.getElementById('cat-report-print-area');
+        if(printArea) {
+            printArea.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 2px solid ${APP_CONFIG.colors.primary}; padding-bottom:8px; margin-bottom:8px;">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        ${logoImgHtml}
+                        <div>
+                            <h1 style="margin:0; font-size:18px; font-weight:900; text-transform:uppercase; color:${APP_CONFIG.colors.secondary};">${APP_CONFIG.clubDisplayName}</h1>
+                            <p style="margin:2px 0 0 0; font-size:10px; font-weight:700; color:#64748b; letter-spacing:1px;">KATEGORİ RAPORU</p>
+                        </div>
+                    </div>
+                    <div style="text-align:right;">
+                        <div style="font-size:12px; font-weight:900; color:${APP_CONFIG.colors.secondary};">${cat}</div>
+                        <div style="font-size:9px; font-weight:800; color:#94a3b8; margin-top:2px;">${getTodayString()}</div>
+                    </div>
+                </div>
+                ${standingsHtmlLocal}
+                ${matchesHtmlLocal}
+                ${rosterHtmlLocal}
+            `;
+        }
+
+        document.getElementById('cat-report-modal').style.display = 'flex';
+    }
+
+    function executeCategoryPDFDownload() {
+        closeModal('cat-report-modal');
+        const printContent = document.getElementById('cat-report-print-area').innerHTML;
+        const cat = state.selectedCategory;
+        
+        openPrintWindow(`Kategori Raporu - ${cat}`, printContent);
     }
 
     // ==========================================
@@ -1918,10 +1441,7 @@
     // ==========================================
     window.onload = () => {
         fetchData(true);
-        // Otomatik yenileme özelliği (Arka planda sessiz çalışır)
-        if (APP_CONFIG.autoRefreshInterval > 0) {
-            setInterval(() => fetchData(false), APP_CONFIG.autoRefreshInterval);
-        }
+        if (APP_CONFIG.autoRefreshInterval > 0) setInterval(() => fetchData(false), APP_CONFIG.autoRefreshInterval);
     };
 </script>
 
