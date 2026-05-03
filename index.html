@@ -175,6 +175,7 @@
             </div>
         </div>
         
+        <!-- MAÇ KARTLARININ BULUNDUĞU ALAN (YATAY LİSTE DÜZENİ) -->
         <div id="match-container" class="flex flex-col gap-4 pb-20"></div>
 
         <div id="empty-state" class="hidden flex-col items-center justify-center py-20 text-slate-400 text-center">
@@ -408,7 +409,6 @@
         return `${m} DK KALDI`;
     }
 
-    // YENİ EKLENEN VERİ NORMALİZE FONKSİYONU
     function normalizeMatchTimeVenue(d, v, t) {
         if (/^\d{1,2}:\d{2}$/.test(v)) {
             t = v;
@@ -794,6 +794,7 @@
                 </div>
             </div>`;
         }
+        if (container) container.innerHTML = html;
     }
 
     function renderCategoryTabs() {
@@ -953,7 +954,6 @@
 
                 standings.forEach((t, i) => {
                     const isUs = isOurClub(t.name);
-                    let rankBadge = ''; 
                     let extraColsBody = !isTwoSetFormat ? `<td class="py-2.5 px-2 text-center font-bold text-emerald-600 text-[10px] bg-emerald-50/30 border-l border-white">${t.w30}</td><td class="py-2.5 px-2 text-center font-bold text-emerald-600 text-[10px] bg-emerald-50/30 border-l border-white">${t.w31}</td><td class="py-2.5 px-2 text-center font-bold text-emerald-600 text-[10px] bg-emerald-50/30 border-l border-white">${t.w32}</td><td class="py-2.5 px-2 text-center font-bold text-rose-600 text-[10px] bg-rose-50/30 border-l border-white">${t.l23}</td><td class="py-2.5 px-2 text-center font-bold text-rose-600 text-[10px] bg-rose-50/30 border-l border-white">${t.l13}</td><td class="py-2.5 px-2 text-center font-bold text-rose-600 text-[10px] bg-rose-50/30 border-l border-white">${t.l03}</td>` : `<td class="py-2.5 px-2 text-center font-bold text-emerald-600 text-[10px] bg-emerald-50/30 border-l border-white">${t.w20}</td><td class="py-2.5 px-2 text-center font-bold text-emerald-600 text-[10px] bg-emerald-50/30 border-l border-white">${t.w21}</td><td class="py-2.5 px-2 text-center font-bold text-rose-600 text-[10px] bg-rose-50/30 border-l border-white">${t.l12}</td>${isMinikGrp ? '' : `<td class="py-2.5 px-2 text-center font-bold text-rose-600 text-[10px] bg-rose-50/30 border-l border-white">${t.l02}</td>`}`;
                     tableHtml += `<tr class="border-b border-slate-50 last:border-none transition-colors ${isUs ? 'bg-brand/10 border-l-4 border-l-brand' : 'hover:bg-slate-50 border-l-4 border-l-transparent'}"><td class="py-2.5 px-2 text-center font-bold text-slate-500 text-xs">${i+1}</td><td class="py-2.5 px-2 flex items-center gap-2 min-w-[200px]">${getLogoHtml(t.name, "w-6 h-6 sm:w-8 sm:h-8")}<div class="flex items-center"><span class="font-black text-[10px] sm:text-xs uppercase ${isUs ? 'text-[#004684]' : 'text-slate-800'} line-clamp-1">${cleanTeamName(t.name)}</span></div></td><td class="py-2.5 px-2 text-center font-bold text-slate-600 text-xs">${t.O}</td><td class="py-2.5 px-2 text-center font-black text-emerald-600 text-xs">${t.G}</td><td class="py-2.5 px-2 text-center font-black text-rose-600 text-xs">${t.M}</td><td class="py-2.5 px-2 text-center font-bold text-slate-600 text-xs">${t.A}</td><td class="py-2.5 px-2 text-center font-bold text-slate-600 text-xs">${t.V}</td><td class="py-2.5 px-2 text-center font-black text-[#004684] text-sm bg-slate-50/50">${t.P}</td><td class="py-2.5 px-2 text-center font-bold text-[#004684]/80 text-[10px]">${formatAveraj(t.A, t.V, true)}</td><td class="py-2.5 px-2 text-center font-bold text-slate-600 text-[10px]">${t.ASP}</td><td class="py-2.5 px-2 text-center font-bold text-slate-600 text-[10px]">${t.VSP}</td><td class="py-2.5 px-2 text-center font-black text-brand text-[10px] bg-slate-50/50">${formatAveraj(t.ASP, t.VSP, false)}</td>${extraColsBody}</tr>`;
                 });
@@ -989,6 +989,10 @@
                 return b.date.split('.').reverse().join('').localeCompare(a.date.split('.').reverse().join(''));
             });
 
+            // ===============================================
+            // YENİ GÜNCELLEME: ANA SAYFA MAÇ KARTLARI DÜZELTİLDİ
+            // (Yatay tek sütunlu ve set skorları ortalı div tasarımı)
+            // ===============================================
             const generateCardHtml = (m) => {
                 const played = isMatchPlayed(m); const isWin = didClubWin(m);
                 const safeM = encodeURIComponent(JSON.stringify(m)).replace(/'/g, "%27");
@@ -1012,8 +1016,10 @@
                 if (played && m.sets && m.sets !== '-') {
                     const sA = [...m.sets.matchAll(/\((\d+)-(\d+)\)/g)];
                     if (sA.length > 0) {
-                        setsHtml = `<div class="flex gap-2 items-center justify-start mt-2 md:mt-3 pt-3 border-t border-slate-50 flex-wrap w-full">${sA.map((s, idx) => `<div class="flex flex-col items-center min-w-[36px]"><span class="text-[8px] font-black text-slate-400 tracking-widest uppercase mb-0.5">S${idx+1}</span><span class="text-[11px] font-black bg-slate-50 border border-slate-100 px-2 py-1 rounded-md text-[#004684] w-full text-center shadow-sm">${s[1]}-${s[2]}</span></div>`).join('')}</div>`;
-                    } else setsHtml = `<div class="text-[11px] font-black text-[#004684] text-left mt-2 bg-slate-50 py-1.5 px-3 rounded-lg border border-slate-100 shadow-sm w-full max-w-[200px] mr-auto">${m.sets.replace(/<[^>]*>/g, '')}</div>`;
+                        setsHtml = `<div class="flex gap-2 items-center justify-center mt-2 md:mt-3 pt-3 border-t border-slate-50 flex-wrap w-full">${sA.map((s, idx) => `<div class="flex flex-col items-center min-w-[36px]"><span class="text-[8px] font-black text-slate-400 tracking-widest uppercase mb-0.5">S${idx+1}</span><span class="text-[11px] font-black bg-slate-50 border border-slate-100 px-2 py-1 rounded-md text-[#004684] w-full text-center shadow-sm">${s[1]}-${s[2]}</span></div>`).join('')}</div>`;
+                    } else {
+                        setsHtml = `<div class="text-[11px] font-black text-[#004684] text-center mt-2 bg-slate-50 py-1.5 rounded-lg border border-slate-100 shadow-sm w-full max-w-[200px] mx-auto">${m.sets.replace(/<[^>]*>/g, '')}</div>`;
+                    }
                 }
 
                 return `
@@ -1162,7 +1168,6 @@
                 thead { display: table-header-group; }
                 tfoot { display: table-footer-group; }
                 
-                /* TEK SAYFA İÇİN MAKSİMUM DARALTILMIŞ MARJLAR */
                 @page { size: A4 portrait; margin: 5mm; }
                 @media print {
                     body { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; background: white; }
@@ -1208,7 +1213,6 @@
         const initials = APP_CONFIG.clubSearchNames[0].substring(0,2).toUpperCase();
         const logoImgHtml = logoUrl ? `<img src="${logoUrl}" style="width:40px; height:40px; object-fit:contain; border-radius:50%;">` : `<div style="width:40px; height:40px; border-radius:20px; background-color:#f1f5f9; border:1px solid #cbd5e1; text-align:center; line-height:40px; font-weight:900; color:#64748b; font-size:16px; display:inline-block;">${initials}</div>`;
 
-        // COMPACT HTML FOR SINGLE REPORT
         const htmlContent = `
             <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 2px solid ${APP_CONFIG.colors.primary}; padding-bottom:8px; margin-bottom:10px;">
                 <div style="display:flex; align-items:center; gap:10px;">
@@ -1292,7 +1296,6 @@
             }
         }
 
-        // COMPACT HTML FOR CATEGORY REPORT
         let standingsHtmlLocal = '';
         if (standings.length > 0) {
             let sHeaders = !isTwoSetFormat ? `<th style="padding:3px 2px; text-align:center; color:#10b981;">3-0</th><th style="padding:3px 2px; text-align:center; color:#10b981;">3-1</th><th style="padding:3px 2px; text-align:center; color:#10b981;">3-2</th><th style="padding:3px 2px; text-align:center; color:#f43f5e;">2-3</th><th style="padding:3px 2px; text-align:center; color:#f43f5e;">1-3</th><th style="padding:3px 2px; text-align:center; color:#f43f5e;">0-3</th>` : `<th style="padding:3px 2px; text-align:center; color:#10b981;">2-0</th><th style="padding:3px 2px; text-align:center; color:#10b981;">2-1</th><th style="padding:3px 2px; text-align:center; color:#f43f5e;">1-2</th>${isMinikGrp ? '' : `<th style="padding:3px 2px; text-align:center; color:#f43f5e;">0-2</th>`}`;
@@ -1331,11 +1334,12 @@
                 const played = isMatchPlayed(m);
                 let scoreTxt = played ? `${m.s1} - ${m.s2}` : 'VS';
                 
+                // YAZDIRMA (PDF) İÇİN ORTALI SET TASARIMI
                 let setsTxt = '-';
                 if (played && m.sets && m.sets !== '-') {
                     const sA = [...m.sets.matchAll(/\((\d+)-(\d+)\)/g)];
                     if (sA.length > 0) {
-                        setsTxt = `<div style="display:flex; gap:8px; justify-content:flex-start; align-items:center;">` + 
+                        setsTxt = `<div style="display:flex; gap:8px; justify-content:center; align-items:center;">` + 
                                   sA.map((s, idx) => `
                                   <div style="display:flex; flex-direction:column; align-items:center; line-height:1.1;">
                                       <span style="font-size:7px; font-weight:900; color:#94a3b8;">S${idx+1}</span>
@@ -1343,7 +1347,7 @@
                                   </div>`).join('') + 
                                   `</div>`;
                     } else {
-                        setsTxt = `<div style="text-align:left;"><span style="font-size:9px; font-weight:900; color:#004684;">${m.sets.replace(/<[^>]*>/g, '')}</span></div>`;
+                        setsTxt = `<div style="text-align:center;"><span style="font-size:9px; font-weight:900; color:#004684;">${m.sets.replace(/<[^>]*>/g, '')}</span></div>`;
                     }
                 }
 
@@ -1368,13 +1372,13 @@
                     <td style="padding:3px 2px; text-align:right; white-space:nowrap; ${isUsA?'font-weight:bold; color:#004684;':''}"><span style="vertical-align:middle;">${cleanTeamName(m.t1)}</span>${t1LogoHtml}</td>
                     <td style="padding:3px 2px; text-align:center; font-weight:900; font-size:10px; white-space:nowrap; min-width:40px;">${scoreTxt}</td>
                     <td style="padding:3px 2px; text-align:left; white-space:nowrap; ${isUsB?'font-weight:bold; color:#004684;':''}">${t2LogoHtml}<span style="vertical-align:middle;">${cleanTeamName(m.t2)}</span></td>
-                    <td style="padding:3px 2px; text-align:left; white-space:nowrap;">${setsTxt}</td>
+                    <td style="padding:3px 2px; text-align:center; white-space:nowrap;">${setsTxt}</td>
                 </tr>`;
             }).join('');
 
             matchesHtmlLocal = `<h3 style="font-size:11px; color:${APP_CONFIG.colors.primary}; border-bottom:1px solid #e2e8f0; padding-bottom:2px; margin-bottom:4px; margin-top:8px; text-transform:uppercase; font-weight:900;">FİKSTÜR VE MAÇ SONUÇLARI</h3>
             <table style="width:100%; border-collapse:collapse; font-size:8px; margin-bottom:8px;">
-                <thead><tr style="background-color:#f8fafc; border-bottom:1px solid #cbd5e1; color:#475569;"><th style="padding:3px 2px; text-align:left;">Tarih/Saat</th><th style="padding:3px 2px; text-align:left;">Salon</th><th style="padding:3px 2px; text-align:right;">Ev Sahibi</th><th style="padding:3px 2px; text-align:center;">Skor</th><th style="padding:3px 2px; text-align:left;">Misafir</th><th style="padding:3px 2px; text-align:left;">Setler</th></tr></thead>
+                <thead><tr style="background-color:#f8fafc; border-bottom:1px solid #cbd5e1; color:#475569;"><th style="padding:3px 2px; text-align:left;">Tarih/Saat</th><th style="padding:3px 2px; text-align:left;">Salon</th><th style="padding:3px 2px; text-align:right;">Ev Sahibi</th><th style="padding:3px 2px; text-align:center;">Skor</th><th style="padding:3px 2px; text-align:left;">Misafir</th><th style="padding:3px 2px; text-align:center;">Setler</th></tr></thead>
                 <tbody>${mRows}</tbody>
             </table>`;
         }
